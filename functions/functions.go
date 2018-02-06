@@ -1,13 +1,13 @@
-package functions
+package main
 
-type DistFunc int
+import "fmt"
 
-type Blah struct{
+type Blah struct {
 	A int
 	B int
 }
 
-func (t *DistFunc) Multiply(args *Blah, reply *int) error {
-	*reply = args.A * args.B
-	return nil
+func Multiply(args interface{}, reply interface{}) {
+	//*reply = args.A * args.B
+	fmt.Println("test")
 }
