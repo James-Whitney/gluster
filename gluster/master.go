@@ -23,6 +23,11 @@ type runner struct {
 	ip string
 }
 
+//TODO remove
+type Blah struct {
+	A int
+	B int
+}
 
 /*
 * Globals
@@ -108,6 +113,8 @@ func ImportFunctionFile(filename string) {
 	var call_name = strings.TrimSuffix(filename, ".go")
 	call_name = filepath.Base(call_name)
 
+	//TODO check the file builds and create list of possible functions to call
+
 	//read whole file into memory
 	contents, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -188,10 +195,17 @@ func runner_execute_function(run *runner, funct string, args interface{}, reply 
 	buf[0] = common.EXEC_FUNC	
 	conn2.Write(buf)
 
-	gob.Register(args)
 	var execSend = common.ExecSend{file.CallPrefix, funct, args}
 	encoder := gob.NewEncoder(conn2)
 	encoder.Encode(execSend)
+
+	var a = 2
+	var b = 3
+	var q = Blah{4,5}
+	encoder.Encode(a)
+	encoder.Encode(b)
+	encoder.Encode(q)
+
 	fmt.Println("Sent command")
 
 	var resp = &common.ExecResp{}

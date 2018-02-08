@@ -8,6 +8,7 @@ import (
 	"encoding/gob"
 	"plugin"
 	"time"
+	"reflect"
 	"../common"
 )
 
@@ -94,6 +95,9 @@ func recv_file(conn net.Conn) {
 		//TODO
 	}
 
+	//TODO hacky, need to wait for file to appear in os filesystem
+	time.Sleep(10 * time.Second)
+
 	//compile to a library
 	cmd := exec.Command("go", "build", "-buildmode=plugin", file.CallPrefix + ".go")
 	err2 := cmd.Run()
@@ -101,9 +105,6 @@ func recv_file(conn net.Conn) {
 		fmt.Println("Failed to build")
 		return
 	}
-	
-	//TODO hacky, need to wait for file to appear in os filesystem
-	time.Sleep(3 * time.Second)
 
 	handle_work(conn)
 }
@@ -127,16 +128,7 @@ func exec_command(conn net.Conn){
 		return
 	}
 
-	//lookup and set arg
-	//arg, err := p.Lookup("Arg")
-	//*arg.(interface{}) = exec.Args
-
-	//lookup and set function pointer
-	//fp, err := p.Lookup("FP")
-	//my_func, err := p.Lookup(exec.FuncName)
-	//*fp.()
-
-	//lookup and call helper function
+	//lookup function
 	f, err := p.Lookup(exec.FuncName)
 	if(err != nil){
 		//TODO send error response
@@ -144,11 +136,22 @@ func exec_command(conn net.Conn){
 		return 
 	}
 
-	var reply interface{}
-	f.(func(interface{}, interface{}))(nil, reply)
+	//get type of function to be called
+	var funcType = reflect.TypeOf(f)
+	var args []reflect.Value
+	//get each argument and decode it
+	for i := 0; i < funcType.NumIn(); i++ {
+		var tmpArg = reflect.New(funcType.In(i))
+		err = dec.Decode(tmpArg.Interface())
+		if err != nil {
+        	fmt.Println("Error decoding argument", i)
+		}
+		args = append(args, tmpArg.Elem())
+	}
+
+
+	//call function
+	reflect.ValueOf(f).Call(args)
 
 	fmt.Println("Done calling function")
-	//lookup reply
-
-	fmt.Println(reply)
 }

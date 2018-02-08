@@ -7,7 +7,7 @@ type Blah struct {
 	B int
 }
 
-func Multiply(args interface{}, reply interface{}) {
+func Multiply(a, b int, q Blah) {
 	//*reply = args.A * args.B
-	fmt.Println("test")
+	fmt.Println("test", a, b, q)
 }
