@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"crypto/sha256"
 	"net"
+	//"reflect"
 	"io/ioutil"
 	"../common"
 )
@@ -23,25 +24,21 @@ type runner struct {
 	ip string
 }
 
-//TODO remove
-type Blah struct {
-	A int
-	B int
-}
-
 /*
 * Globals
 */
 var runner_list []runner
 var file_list []common.FuncFile
+var debugFlag = true;
 
 
 /*
 * Public Functions
 */
-//execute give rpc function on a runner
-//funct should be of form file.function where file is the base filename without the extention
-func RunDist(funct string, args interface{}, reply interface{}){
+//execute function on remote node
+//reply should be a pointer to the type returned by the function being called
+//args is the arguments the function is expecting
+func RunDist(funct string, reply interface{}, args ...interface{}){
 	//select the runner
 	var cur_runner = pick_runner()
 	if cur_runner == nil {
@@ -55,12 +52,14 @@ func RunDist(funct string, args interface{}, reply interface{}){
 		return
 	}
 
+	//TODO check validity (reply must be pointer), arguments/reply must match type
+
 	//search imported files
 	for _, el := range file_list {
 		if(strings.Compare(el.CallPrefix, fun_elements[0]) == 0){
 			//tell runner to run the function
 			//TODO verify function is in file on server side
-			runner_execute_function(cur_runner, fun_elements[1], args, reply, el)
+			runner_execute_function(cur_runner, fun_elements[1], el, reply, args)
 			return
 		}
 	}
@@ -132,9 +131,20 @@ func ImportFunctionFile(filename string) {
 	file_list = append(file_list, new_func_file)
 }
 
+//Turn on debugging
+func setDebug(debug bool){
+	debugFlag = debug;
+}
+
 /*
 * Private Functions
 */
+func debugPrint(args ...interface{}){
+	if(debugFlag){
+		fmt.Println(args)
+	}
+}
+
 func pick_runner() *runner{
 	//pick random
 	if len(runner_list) == 0 {
@@ -145,71 +155,71 @@ func pick_runner() *runner{
 }
 
 func runner_compare_hash(conn net.Conn, hash []byte) bool{
-	buf := make([]byte, 1)
-	
-	buf[0] = common.HASH_CMP
-	conn.Write(buf)
+	//send control byte
+	common.SendByte(conn, common.HASH_CMP)
+	//send hash
 	var n, _ = conn.Write(hash)
 	
-	fmt.Println("Wrote hash bytes: ", n)
+	debugPrint("Wrote hash bytes: ", n)
 
-	var _, err = conn.Read(buf)
-	if(err != nil){
-		fmt.Println("Error reading response")
-		return false
-	}
-
-	//hash does match, function is already there
-	if(buf[0] == 1){
-		return true
-	}
-
-	return false
+	return common.RecvACK(conn)
 }
 
 func runner_send_file(conn net.Conn, file common.FuncFile){
-	buf := make([]byte, 1)
-	buf[0] = common.SEND_FILE	
-	conn.Write(buf)
+	//send control byte
+	common.SendByte(conn, common.SEND_FILE)
 	
 	//encode file info
 	encoder := gob.NewEncoder(conn)
 	encoder.Encode(file)
+
+	common.RecvACK(conn)
 }
 
-func runner_execute_function(run *runner, funct string, args interface{}, reply interface{}, file common.FuncFile){
+func runner_execute_function(run *runner, funct string, file common.FuncFile, reply interface{}, args []interface{}){
 	conn, err := net.Dial("tcp", run.ip)
 	if err != nil {
 		fmt.Printf("Error connecting to runner")
+		return
 	}
 	defer conn.Close()
 
 	if(!runner_compare_hash(conn, file.Checksum)){
 		runner_send_file(conn, file)
 	}
-	conn.Close()
 
-	conn2, _ := net.Dial("tcp", run.ip)
-	//send exec command
-	buf := make([]byte, 1)
-	buf[0] = common.EXEC_FUNC	
-	conn2.Write(buf)
+	//send control byte
+	debugPrint("Sending exec cmd")
+	common.SendByte(conn, common.EXEC_FUNC)
 
-	var execSend = common.ExecSend{file.CallPrefix, funct, args}
-	encoder := gob.NewEncoder(conn2)
+	//send which function to call
+	var execSend = common.ExecSend{file.CallPrefix, funct}
+	encoder := gob.NewEncoder(conn)
 	encoder.Encode(execSend)
 
-	var a = 2
-	var b = 3
-	var q = Blah{4,5}
-	encoder.Encode(a)
-	encoder.Encode(b)
-	encoder.Encode(q)
+	//send all arguments
+	for _, arg := range args{
+		encoder.Encode(arg)
+	}
 
-	fmt.Println("Sent command")
+	debugPrint("Sent command")
 
-	var resp = &common.ExecResp{}
-	dec := gob.NewDecoder(conn2)
-	dec.Decode(resp)
+	//receive ack
+	if(!common.RecvACK(conn)){
+		//got NACK
+		return
+	}
 
+	//get back response
+	if(reply != nil){
+		dec := gob.NewDecoder(conn)
+		//debugPrint(reflect.TypeOf(reply).Elem())
+		//var tmpReply = reflect.New(reflect.TypeOf(reply).Elem())
+		//var tmpReply int
+		err = dec.Decode(reply)
+		if err != nil {
+        	fmt.Println("Error decoding reply")
+		}
+		//debugPrint(tmpReply)
+	}
 }

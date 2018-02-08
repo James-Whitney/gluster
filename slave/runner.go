@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"encoding/gob"
 	"plugin"
-	"time"
 	"reflect"
 	"../common"
 )
@@ -43,25 +42,21 @@ func wait_for_work() {
 
 func handle_work(conn net.Conn) {
 
-	buf := make([]byte, 1)
-	var _, err = conn.Read(buf)
-	if(err != nil){
-		fmt.Println("Error reading response", err)
-		return
-	}
+	var ctl = common.RecvByte(conn)
+	debugPrint("Control received", ctl)
 
 	//different cases
-	if(buf[0] == common.HASH_CMP){
+	if(ctl == common.HASH_CMP){
 		handle_hash_check(conn)
-	} else if(buf[0] == common.SEND_FILE){
+	} else if(ctl == common.SEND_FILE){
 		recv_file(conn)
-	} else if(buf[0] == common.EXEC_FUNC){
+	} else if(ctl == common.EXEC_FUNC){
 		exec_command(conn)
 	}
 }
 
 func handle_hash_check(conn net.Conn) {
-	fmt.Println("Handling hash check")
+	debugPrint("Handling hash check")
 
 	hashBuf := make([]byte, 32)
 	var _, err = conn.Read(hashBuf)
@@ -70,33 +65,33 @@ func handle_hash_check(conn net.Conn) {
 		return
 	}
 
-	fmt.Println("Got hash: ", hashBuf)
+	debugPrint("Got hash: ", hashBuf)
 
-	sendBuf := make([]byte, 1)
-	sendBuf[0] = 0
-	conn.Write(sendBuf)
+	//TODO check if hashes match
+	common.SendByte(conn, common.NACK)
 
 	handle_work(conn)
 }
 
 func recv_file(conn net.Conn) {
-	fmt.Println("Receiving file")
+	debugPrint("Receiving file")
 
 	dec := gob.NewDecoder(conn)
 
 	file := &common.FuncFile{}
 	dec.Decode(file)
 
-	fmt.Println("Got file with name: ", file.CallPrefix)
+	debugPrint("Got file with name: ", file.CallPrefix)
 
 	//save to go file
 	err := ioutil.WriteFile(file.CallPrefix + ".go", file.Contents, 0)
 	if(err != nil){
 		//TODO
+		fmt.Println("Error writing go file")
 	}
 
 	//TODO hacky, need to wait for file to appear in os filesystem
-	time.Sleep(10 * time.Second)
+	//time.Sleep(10 * time.Second)
 
 	//compile to a library
 	cmd := exec.Command("go", "build", "-buildmode=plugin", file.CallPrefix + ".go")
@@ -106,11 +101,14 @@ func recv_file(conn net.Conn) {
 		return
 	}
 
+	//send ack
+	common.SendByte(conn, common.ACK)
+
 	handle_work(conn)
 }
 
 func exec_command(conn net.Conn){
-	fmt.Println("Executing Function")
+	debugPrint("Executing Function")
 
 	//receive command
 	dec := gob.NewDecoder(conn)
@@ -119,7 +117,7 @@ func exec_command(conn net.Conn){
 
 	var path = exec.FuncFile + ".so"
 
-	fmt.Println("looking for ", path)
+	debugPrint("looking for ", path)
 
 	p, err := plugin.Open(path)
 	if(err != nil){
@@ -151,7 +149,33 @@ func exec_command(conn net.Conn){
 
 
 	//call function
-	reflect.ValueOf(f).Call(args)
+	var reply = reflect.ValueOf(f).Call(args)
 
-	fmt.Println("Done calling function")
+	//send ack
+	common.SendByte(conn, common.ACK)
+
+	//encode and send back reply
+	if(len(reply) > 0){
+			sendReply(conn, reply[0].Interface())
+	}
+
+	debugPrint("Done calling function")
+}
+
+func sendReply(conn net.Conn, reply interface{}){
+	//if response is pointer, dereference
+	debugPrint("Sending reply", reply)
+	enc := gob.NewEncoder(conn)
+	enc.Encode(reply)
+}
+
+
+/*
+* Debug functions
+*/
+var debugFlag = true
+func debugPrint(args ...interface{}){
+	if(debugFlag){
+		fmt.Println(args)
+	}
 }
