@@ -8,20 +8,40 @@ import(
 * Constants
 */
 const DEFAULT_PORT = 1234
+
+//command control bytes
 const HASH_CMP byte = 11
 const SEND_FILE byte = 12
 const EXEC_FUNC byte = 13
+const GET_INFO byte = 14
+
 const ACK byte = 1
 const NACK byte = 0
 
+type RunnerInfo struct {
+	Cores int
+	Arch string
+	OS string
+}
+
+type RunnerStatus struct {
+	LoadedPlugins []string
+	SystemLoad float32
+	RunningJobs int
+}
+
 type FuncFile struct {
 	CallPrefix string
-	Contents []byte
-	Checksum []byte
+	Checksum uint32
+}
+
+type FuncFileContent struct {
+	File FuncFile
+	Content []byte
 }
 
 type ExecSend struct {
-	FuncFile string
+	FuncFileName string
 	FuncName string
 }
 

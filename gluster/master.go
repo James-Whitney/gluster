@@ -7,9 +7,8 @@ import (
 	"strings"
 	"encoding/gob"
 	"path/filepath"
-	"crypto/sha256"
+	"hash/crc32"
 	"net"
-	//"reflect"
 	"io/ioutil"
 	"../common"
 )
@@ -28,7 +27,7 @@ type runner struct {
 * Globals
 */
 var runner_list []runner
-var file_list []common.FuncFile
+var file_list []common.FuncFileContent
 var debugFlag = true;
 
 
@@ -56,7 +55,7 @@ func RunDist(funct string, reply interface{}, args ...interface{}){
 
 	//search imported files
 	for _, el := range file_list {
-		if(strings.Compare(el.CallPrefix, fun_elements[0]) == 0){
+		if(strings.Compare(el.File.CallPrefix, fun_elements[0]) == 0){
 			//tell runner to run the function
 			//TODO verify function is in file on server side
 			runner_execute_function(cur_runner, fun_elements[1], el, reply, args)
@@ -122,12 +121,13 @@ func ImportFunctionFile(filename string) {
 	}
 
 	//compute hash of file
-	h := sha256.New()
-	h.Write(contents)
-	var sum = h.Sum(nil)
+	var sum = crc32.ChecksumIEEE(contents)
 
 	//add to list
-	var new_func_file = common.FuncFile{call_name, contents, sum}
+	var new_func_file = common.FuncFileContent{}
+	new_func_file.File.CallPrefix = call_name
+	new_func_file.File.Checksum = sum
+	new_func_file.Content = contents
 	file_list = append(file_list, new_func_file)
 }
 
@@ -154,18 +154,19 @@ func pick_runner() *runner{
 	return &runner_list[rand.Intn(len(runner_list))]
 }
 
-func runner_compare_hash(conn net.Conn, hash []byte) bool{
+func runner_compare_hash(conn net.Conn, hash uint32) bool{
 	//send control byte
 	common.SendByte(conn, common.HASH_CMP)
 	//send hash
-	var n, _ = conn.Write(hash)
+	enc := gob.NewEncoder(conn)
+	enc.Encode(hash)
 	
-	debugPrint("Wrote hash bytes: ", n)
+	debugPrint("Wrote hash:", hash)
 
 	return common.RecvACK(conn)
 }
 
-func runner_send_file(conn net.Conn, file common.FuncFile){
+func runner_send_file(conn net.Conn, file common.FuncFileContent){
 	//send control byte
 	common.SendByte(conn, common.SEND_FILE)
 	
@@ -176,7 +177,7 @@ func runner_send_file(conn net.Conn, file common.FuncFile){
 	common.RecvACK(conn)
 }
 
-func runner_execute_function(run *runner, funct string, file common.FuncFile, reply interface{}, args []interface{}){
+func runner_execute_function(run *runner, funct string, file common.FuncFileContent, reply interface{}, args []interface{}){
 	conn, err := net.Dial("tcp", run.ip)
 	if err != nil {
 		fmt.Printf("Error connecting to runner")
@@ -184,7 +185,7 @@ func runner_execute_function(run *runner, funct string, file common.FuncFile, re
 	}
 	defer conn.Close()
 
-	if(!runner_compare_hash(conn, file.Checksum)){
+	if(!runner_compare_hash(conn, file.File.Checksum)){
 		runner_send_file(conn, file)
 	}
 
@@ -193,7 +194,7 @@ func runner_execute_function(run *runner, funct string, file common.FuncFile, re
 	common.SendByte(conn, common.EXEC_FUNC)
 
 	//send which function to call
-	var execSend = common.ExecSend{file.CallPrefix, funct}
+	var execSend = common.ExecSend{file.File.CallPrefix, funct}
 	encoder := gob.NewEncoder(conn)
 	encoder.Encode(execSend)
 

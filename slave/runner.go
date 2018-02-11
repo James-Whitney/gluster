@@ -8,14 +8,23 @@ import (
 	"encoding/gob"
 	"plugin"
 	"reflect"
+	"sync"
+	"runtime"
 	"../common"
 )
 
+/*
+* globals
+*/
+var funcFileList []common.FuncFile
+var funcListMut = &sync.RWMutex{}
+var status common.RunnerStatus;
+
 func main() {
+	//TODO check go version and OS to make sure plugins can be built
+
 	wait_for_work()
 }
-
-
 
 
 func wait_for_work() {
@@ -52,23 +61,37 @@ func handle_work(conn net.Conn) {
 		recv_file(conn)
 	} else if(ctl == common.EXEC_FUNC){
 		exec_command(conn)
+	} else if(ctl == common.GET_INFO){
+		send_info(conn)
 	}
 }
 
 func handle_hash_check(conn net.Conn) {
 	debugPrint("Handling hash check")
 
-	hashBuf := make([]byte, 32)
-	var _, err = conn.Read(hashBuf)
+	dec := gob.NewDecoder(conn)
+	var hashRecv uint32
+	var err = dec.Decode(&hashRecv)
 	if(err != nil){
 		fmt.Println("Error reading hash")
 		return
 	}
 
-	debugPrint("Got hash: ", hashBuf)
+	debugPrint("Got hash: ", hashRecv)
 
-	//TODO check if hashes match
-	common.SendByte(conn, common.NACK)
+	//check if hashes match
+	var funcHere byte = common.NACK
+	funcListMut.RLock()
+	for _ , f := range funcFileList {
+		if(f.Checksum == hashRecv){
+			debugPrint("File is already here")
+			funcHere = common.ACK
+			break
+		}
+	}
+	funcListMut.RUnlock()
+
+	common.SendByte(conn, funcHere)
 
 	handle_work(conn)
 }
@@ -78,28 +101,32 @@ func recv_file(conn net.Conn) {
 
 	dec := gob.NewDecoder(conn)
 
-	file := &common.FuncFile{}
+	file := &common.FuncFileContent{}
 	dec.Decode(file)
 
-	debugPrint("Got file with name: ", file.CallPrefix)
+	debugPrint("Got file with name: ", file.File.CallPrefix)
 
 	//save to go file
-	err := ioutil.WriteFile(file.CallPrefix + ".go", file.Contents, 0)
+	err := ioutil.WriteFile(file.File.CallPrefix + ".go", file.Content, 0644)
 	if(err != nil){
 		//TODO
 		fmt.Println("Error writing go file")
 	}
 
-	//TODO hacky, need to wait for file to appear in os filesystem
-	//time.Sleep(10 * time.Second)
-
 	//compile to a library
-	cmd := exec.Command("go", "build", "-buildmode=plugin", file.CallPrefix + ".go")
+	cmd := exec.Command("go", "build", "-buildmode=plugin", 
+		"-o", file.File.CallPrefix + string(file.File.Checksum) + ".so", 
+		file.File.CallPrefix + ".go")
 	err2 := cmd.Run()
 	if(err2 != nil){
 		fmt.Println("Failed to build")
 		return
 	}
+
+	//add to list of available function files
+	funcListMut.Lock()
+	funcFileList = append(funcFileList, file.File)
+	funcListMut.Unlock()
 
 	//send ack
 	common.SendByte(conn, common.ACK)
@@ -115,16 +142,19 @@ func exec_command(conn net.Conn){
 	exec := &common.ExecSend{}
 	dec.Decode(exec)
 
-	var path = exec.FuncFile + ".so"
+	var path = exec.FuncFileName + ".so"
 
 	debugPrint("looking for ", path)
 
+	//TODO move to file recv step
 	p, err := plugin.Open(path)
 	if(err != nil){
 		//TODO send error response
 		fmt.Println("Error opening function library: ", path, " : ", err)
 		return
 	}
+
+
 
 	//lookup function
 	f, err := p.Lookup(exec.FuncName)
@@ -169,6 +199,16 @@ func sendReply(conn net.Conn, reply interface{}){
 	enc.Encode(reply)
 }
 
+
+func send_info(conn net.Conn){
+	var info = common.RunnerInfo{}
+	info.Cores = runtime.NumCPU()
+	info.Arch = runtime.GOARCH
+	info.OS = runtime.GOOS
+
+	//write structure
+	sendReply(conn, info)
+}
 
 /*
 * Debug functions
