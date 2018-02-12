@@ -10,9 +10,7 @@ import(
 */
 const DEFAULT_PORT = 1234
 
-//command control bytes
-const HASH_CMP byte = 11
-const SEND_FILE byte = 12
+//command control bytes 
 const EXEC_FUNC byte = 13
 const GET_INFO byte = 14
 
@@ -35,6 +33,7 @@ type RunnerStatus struct {
 	SystemLoad float32
 	RunningJobs int
 }
+
 
 type FuncFile struct {
 	CallPrefix string

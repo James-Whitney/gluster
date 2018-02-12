@@ -23,6 +23,7 @@ var status common.RunnerStatus;
 func main() {
 	//TODO check go version and OS to make sure plugins can be built
 
+
 	wait_for_work()
 }
 
@@ -60,74 +61,6 @@ func handle_work(conn net.Conn) {
 	} else if(ctl == common.GET_INFO){
 		send_info(conn)
 	}
-}
-
-func handle_hash_check(conn net.Conn) {
-	debugPrint("Handling hash check")
-
-	dec := gob.NewDecoder(conn)
-	var hashRecv uint32
-	var err = dec.Decode(&hashRecv)
-	if(err != nil){
-		fmt.Println("Error reading hash")
-		return
-	}
-
-	debugPrint("Got hash: ", hashRecv)
-
-	//check if hashes match
-	var funcHere byte = common.NACK
-	funcListMut.RLock()
-	for _ , f := range funcFileList {
-		if(f.Checksum == hashRecv){
-			debugPrint("File is already here")
-			funcHere = common.ACK
-			break
-		}
-	}
-	funcListMut.RUnlock()
-
-	common.SendByte(conn, funcHere)
-
-	handle_work(conn)
-}
-
-func recv_file(conn net.Conn) {
-	debugPrint("Receiving file")
-
-	dec := gob.NewDecoder(conn)
-
-	file := &common.FuncFileContent{}
-	dec.Decode(file)
-
-	debugPrint("Got file with name: ", file.File.CallPrefix)
-
-	//save to go file
-	err := ioutil.WriteFile(file.File.CallPrefix + ".go", file.Content, 0644)
-	if(err != nil){
-		//TODO
-		fmt.Println("Error writing go file")
-	}
-
-	//compile to a library
-	cmd := exec.Command("go", "build", "-buildmode=plugin", 
-		"-o", file.File.CallPrefix + string(file.File.Checksum) + ".so", 
-		file.File.CallPrefix + ".go")
-	err2 := cmd.Run()
-	if(err2 != nil){
-		fmt.Println("Failed to build")
-		return
-	}
-
-	//add to list of available function files
-	funcListMut.Lock()
-	funcFileList = append(funcFileList, file.File)
-	funcListMut.Unlock()
-
-	//send ack
-	common.SendByte(conn, common.ACK)
-
-	handle_work(conn)
 }
 
 func check_for_file(conn net.Conn, execReq common.ExecRequest){
@@ -172,8 +105,10 @@ func check_for_file(conn net.Conn, execReq common.ExecRequest){
 	}
 
 	//compile to a library
-	cmd := exec.Command("go", "build", "-buildmode=plugin", 
-		"-o", file.File.CallPrefix + ".so", 
+	cmd := exec.Command("go", "build", 
+		"-ldflags", "\"-pluginpath=plugin/hot-" + fmt.Sprint(file.File.Checksum) + "\"", 
+		"-buildmode=plugin", 
+		"-o", file.File.CallPrefix + fmt.Sprint(file.File.Checksum) + ".so", 
 		file.File.CallPrefix + ".go")
 	err2 := cmd.Run()
 	if(err2 != nil){
@@ -218,7 +153,8 @@ func exec_command(conn net.Conn){
 	check_for_file(conn, *exec)
 
 	//load in function file library
-	var path = exec.FuncFileName + ".so"
+	var path = exec.FuncFileName + fmt.Sprint(exec.Checksum) + ".so"
+	debugPrint("Loading plugin", path)
 	p, err := plugin.Open(path)
 	if(err != nil){
 		//TODO send error response
@@ -243,7 +179,11 @@ func exec_command(conn net.Conn){
 	encoder.Encode(encodeFuncSig(funcType))
 
 
-		//get each argument and decode it
+	if(common.RecvByte(conn) != common.ARGS_INCOMING){
+		return
+	}
+
+	//get each argument and decode it
 	var args []reflect.Value
 	for i := 0; i < funcType.NumIn(); i++ {
 		var tmpArg = reflect.New(funcType.In(i))

@@ -250,6 +250,7 @@ func runner_execute_function(run *runner, id int, funct string, file common.Func
 
 
 	//send all arguments
+	common.SendByte(conn, common.ARGS_INCOMING)
 	for _, arg := range args{
 		encoder.Encode(arg)
 	}
