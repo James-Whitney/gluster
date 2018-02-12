@@ -2,6 +2,7 @@ package common
 
 import(
 	"net"
+	"reflect"
 )
 
 /*
@@ -14,6 +15,11 @@ const HASH_CMP byte = 11
 const SEND_FILE byte = 12
 const EXEC_FUNC byte = 13
 const GET_INFO byte = 14
+
+const REQUESTING_FILE byte = 15
+const FILE_INCOMING byte = 16
+const REQUESTING_ARGS byte = 17
+const ARGS_INCOMING byte = 18
 
 const ACK byte = 1
 const NACK byte = 0
@@ -40,10 +46,17 @@ type FuncFileContent struct {
 	Content []byte
 }
 
-type ExecSend struct {
+type ExecRequest struct {
+	Checksum uint32
 	FuncFileName string
 	FuncName string
 }
+
+type FuncSignature struct {
+	Out string
+	In []string
+}
+
 
 func SendByte(conn net.Conn, b byte){
 	buf := make([]byte, 1)
@@ -66,4 +79,30 @@ func RecvACK(conn net.Conn) bool{
 		return true
 	}
 	return false
+}
+
+func encodeTypeHelper(t reflect.Type, structList []string) string{
+	//expand struct
+	if(t.Kind() == reflect.Struct){
+		//check for recursion on structs and throw error
+		structList = append(structList, t.Name())
+		//encode each field in struct
+		var str string = "{"
+		var i int
+		for i = 0;i < t.NumField() - 1; i++ {
+			str += encodeTypeHelper(t.Field(i).Type, structList) + ", "
+		}
+		if(t.NumField() > 0){
+			str += encodeTypeHelper(t.Field(i).Type, structList)
+		}
+		return str + "}"
+	} else if(t.Kind() == reflect.Ptr){
+		return "*" + encodeTypeHelper(t.Elem(), structList)
+	} else {
+		return t.Kind().String()
+	}
+}
+
+func EncodeType(t reflect.Type) string {
+	return encodeTypeHelper(t, nil)
 }
