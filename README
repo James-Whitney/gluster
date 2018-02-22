@@ -1,6 +1,0 @@
-To use the library, create a go file that includes 
-    "./gluster"
-    . "./functions"
-
-Define any of your functions in the functions/functions.go file with the prototype
-    func (t *DistFunc) YourFunc(args interface{}, reply interface{}) error 
