@@ -24,12 +24,17 @@ type runner struct {
 	ip string
 }
 
+type jobStatus struct {
+	done bool
+	reply interface{}
+}
+
 /*
 * Globals
 */
 var runner_list []runner
 var file_list []common.FuncFileContent
-var jobs_done []bool
+var jobs []jobStatus
 var debugFlag = true;
 
 
@@ -40,7 +45,7 @@ var debugFlag = true;
 //reply should be a pointer to the type returned by the function being called
 //args is the arguments the function is expecting
 //give back job id that can be used with wait or -1 on error
-func RunDist(funct string, reply interface{}, args ...interface{}) int{
+func RunDist(funct string, reply reflect.Type, args ...interface{}) int{
 	//select the runner
 	var cur_runner = pick_runner()
 	if cur_runner == nil {
@@ -55,17 +60,17 @@ func RunDist(funct string, reply interface{}, args ...interface{}) int{
 	}
 
 	//validity check (reply must be pointer)
-	if(reflect.TypeOf(reply).Kind() != reflect.Ptr || reflect.TypeOf(reply).Elem().Kind() == reflect.Ptr){
+	/*if(reflect.TypeOf(reply).Kind() != reflect.Ptr || reflect.TypeOf(reply).Elem().Kind() == reflect.Ptr){
 		debugPrint("Return type is not a single pointer, aborting")
 		return -1
-	}
+	}*/
 
 	//search imported files
 	for _, el := range file_list {
 		if(strings.Compare(el.File.CallPrefix, fun_elements[0]) == 0){
 			//generate job id
-			var id = len(jobs_done)
-			jobs_done = append(jobs_done, false)
+			var id = len(jobs)
+			jobs = append(jobs, jobStatus{false, nil})
 
 			//tell runner to run the function
 			go runner_execute_function(cur_runner, id, fun_elements[1], el, reply, args)
@@ -177,12 +182,23 @@ func ImportFunctionFileSO(filename string) {
 //returns whether the job with the given id is done executing
 func JobDone(id int) bool {
 	//check for invalid id
-	if(id < 0 || id >= len(jobs_done)){
+	if(id < 0 || id >= len(jobs)){
 		return false
 	}
 
-	return jobs_done[id]
+	return jobs[id].done
 }
+
+//gives back the return value from the given job
+func GetReturn(id int) interface{} {
+	//check for invalid id
+	if(id < 0 || id >= len(jobs)){
+		return nil
+	}
+
+	return jobs[id].reply
+}
+
 
 //Turn on debugging
 func SetDebug(debug bool){
@@ -207,7 +223,7 @@ func pick_runner() *runner{
 	return &runner_list[rand.Intn(len(runner_list))]
 }
 
-func compareType(want common.FuncSignature, haveRep interface{}, haveArgs []interface{}) bool {
+func compareType(want common.FuncSignature, haveRep reflect.Type, haveArgs []interface{}) bool {
 
 	//check number of args
 	if(len(want.In) != len(haveArgs)){
@@ -224,8 +240,11 @@ func compareType(want common.FuncSignature, haveRep interface{}, haveArgs []inte
 		}
 	}
 
+	//TODO what to do if return type is void
+
 	//compare return type
-	var repType = common.EncodeType(reflect.TypeOf(haveRep).Elem())
+	//var repType = common.EncodeType(reflect.TypeOf(haveRep).Elem())
+	var repType = common.EncodeType(haveRep)
 	if(want.Out != repType){
 		debugPrint("Types don't match for reply, want:", want.Out, ", have:", repType)
 		return false
@@ -234,7 +253,7 @@ func compareType(want common.FuncSignature, haveRep interface{}, haveArgs []inte
 	return true
 }
 
-func runner_execute_function(run *runner, id int, funct string, file common.FuncFileContent, reply interface{}, args []interface{}){
+func runner_execute_function(run *runner, id int, funct string, file common.FuncFileContent, reply reflect.Type, args []interface{}){
 	conn, err := net.Dial("tcp", run.ip)
 	if err != nil {
 		fmt.Printf("Error connecting to runner")
@@ -273,7 +292,7 @@ func runner_execute_function(run *runner, id int, funct string, file common.Func
 		return
 	}
 
-	//TODO verify arguments match function signature
+	//verify arguments match function signature
 	debugPrint("Function type is", funcType)
 	if(!compareType(funcType, reply, args)){
 		debugPrint("Compare failed")
@@ -295,18 +314,16 @@ func runner_execute_function(run *runner, id int, funct string, file common.Func
 	}
 
 	//get back response
+	var tmp = reflect.New(reply)
 	if(reply != nil){
 		dec := gob.NewDecoder(conn)
-		//debugPrint(reflect.TypeOf(reply).Elem())
-		//var tmpReply = reflect.New(reflect.TypeOf(reply).Elem())
-		//var tmpReply int
-		err = dec.Decode(reply)
+		err = dec.Decode(tmp.Interface())
 		if err != nil {
         	fmt.Println("Error decoding reply")
 		}
-		//debugPrint(tmpReply)
 	}
 
 	//make job id as done
-	jobs_done[id] = true
+	jobs[id].reply = tmp.Elem()
+	jobs[id].done = true
 }

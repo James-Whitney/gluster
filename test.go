@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-
+	"reflect"
 	"./gluster"
 )
 
@@ -37,8 +37,9 @@ func printMatrix(x []int, size int) {
 func main() {
 	gluster.AddRunner("localhost")
 	gluster.ImportFunctionFile("functions/functions.go")
+	//gluster.ImportFunctionFileSO("functions.so")
 
-	a := make([]int, maxArraySize*maxArraySize)
+	/*a := make([]int, maxArraySize*maxArraySize)
 	b := make([]int, maxArraySize*maxArraySize)
 	fillArray(a, 3)
 	fillArray(b, 2)
@@ -46,19 +47,19 @@ func main() {
 	result := make([]int, maxArraySize*maxArraySize)
 
 	for i := 0; i < 10; i++ {
-		gluster.RunDist("functions.MatrixMultiply", &c, a, b, i, 10)
+		gluster.RunDist("functions.MatrixMultiply", reflect.TypeOf(c), a, b, i, 10)
 		mergeArray(c, result)
 	}
 
 	printMatrix(result, maxArraySize)
-
+*/
 	var ret Blah
-	var id = gluster.RunDist("functions.Multiply", &ret, 53, 1)
+	var id = gluster.RunDist("functions.Multiply", reflect.TypeOf(ret), 53, 1)
 
 	//wait
 	fmt.Println("Waiting")
 	for !gluster.JobDone(id) {
 	}
 
-	fmt.Println("Got back", ret)
+	fmt.Println("Got back", gluster.GetReturn(id))
 }
