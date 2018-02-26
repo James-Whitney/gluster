@@ -95,25 +95,40 @@ func check_for_file(conn net.Conn, execReq common.ExecRequest){
 	file := &common.FuncFileContent{}
 	dec.Decode(file)
 
-	debugPrint("Got file with name: ", file.File.CallPrefix)
+	//go file received
+	if(file.FileType == common.GO_FILE){
+		debugPrint("Got Go file with name: ", file.File.CallPrefix)
 
-	//save to go file
-	err := ioutil.WriteFile(file.File.CallPrefix + ".go", file.Content, 0644)
-	if(err != nil){
-		//TODO
-		fmt.Println("Error writing go file")
-	}
+		//save to go file
+		err := ioutil.WriteFile(file.File.CallPrefix + ".go", file.Content, 0644)
+		if(err != nil){
+			//TODO
+			fmt.Println("Error writing go file")
+		}
 
-	//compile to a library
-	cmd := exec.Command("go", "build", 
-		"-ldflags", "\"-pluginpath=plugin/hot-" + fmt.Sprint(file.File.Checksum) + "\"", 
-		"-buildmode=plugin", 
-		"-o", file.File.CallPrefix + fmt.Sprint(file.File.Checksum) + ".so", 
-		file.File.CallPrefix + ".go")
-	err2 := cmd.Run()
-	if(err2 != nil){
-		fmt.Println("Failed to build")
-		return
+		//compile to a library
+		cmd := exec.Command("go", "build", 
+			"-ldflags", "\"-pluginpath=plugin/hot-" + fmt.Sprint(file.File.Checksum) + "\"", 
+			"-buildmode=plugin", 
+			"-o", file.File.CallPrefix + fmt.Sprint(file.File.Checksum) + ".so", 
+			file.File.CallPrefix + ".go")
+		err2 := cmd.Run()
+		if(err2 != nil){
+			fmt.Println("Failed to build")
+			return
+		}
+	} else if(file.FileType == common.SO_FILE){
+		debugPrint("Got SO file with name: ", file.File.CallPrefix)
+
+		//save to SO file
+		err := ioutil.WriteFile(file.File.CallPrefix + fmt.Sprint(file.File.Checksum) + ".so", file.Content, 0644)
+		if(err != nil){
+			//TODO
+			fmt.Println("Error writing SO file")
+		}
+
+	} else {
+		//TODO error
 	}
 
 	//add to list of available function files

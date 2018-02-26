@@ -30,4 +30,6 @@ func MatrixMultiply(a []int, b []int, id int, idCount int) []int {
 			c[row*len(a)+col] = Pvalue
 		}
 	}
+
+	return c
 }

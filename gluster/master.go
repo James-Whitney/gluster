@@ -138,6 +138,38 @@ func ImportFunctionFile(filename string) {
 	var new_func_file = common.FuncFileContent{}
 	new_func_file.File.CallPrefix = call_name
 	new_func_file.File.Checksum = sum
+	new_func_file.FileType = common.GO_FILE
+	new_func_file.Content = contents
+	file_list = append(file_list, new_func_file)
+}
+
+//add a file of functions to be used
+func ImportFunctionFileSO(filename string) {
+	//must end in .go
+	if(filepath.Ext(filename) != ".so"){
+		fmt.Println("Invalid filename, must end in .so")
+		return
+	}
+
+	//trim down filename to just the base without the extension
+	var call_name = strings.TrimSuffix(filename, ".so")
+	call_name = filepath.Base(call_name)
+
+	//read whole file into memory
+	contents, err := ioutil.ReadFile(filename)
+	if err != nil {
+		fmt.Println("Unable to read file: ", err)
+		return
+	}
+
+	//compute hash of file
+	var sum = crc32.ChecksumIEEE(contents)
+
+	//add to list
+	var new_func_file = common.FuncFileContent{}
+	new_func_file.File.CallPrefix = call_name
+	new_func_file.File.Checksum = sum
+	new_func_file.FileType = common.SO_FILE
 	new_func_file.Content = contents
 	file_list = append(file_list, new_func_file)
 }

@@ -22,6 +22,9 @@ const ARGS_INCOMING byte = 18
 const ACK byte = 1
 const NACK byte = 0
 
+const GO_FILE = 0
+const SO_FILE = 1
+
 type RunnerInfo struct {
 	Cores int
 	Arch string
@@ -42,6 +45,7 @@ type FuncFile struct {
 
 type FuncFileContent struct {
 	File FuncFile
+	FileType uint8
 	Content []byte
 }
 
