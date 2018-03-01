@@ -14,8 +14,8 @@ func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) 
 
 	fmt.Println("InputB: ", inputB)
 	outputMatrix := make([]int, width*width)
-	var start = id * len(inputA) / idCount
-	var end = (id + 1) * len(inputA) / idCount
+	var start = id * width / idCount
+	var end = (id + 1) * width / idCount
 
 	for row := start; row < end; row++ {
 		for col := 0; col < width; col++ {
