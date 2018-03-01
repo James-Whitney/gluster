@@ -1,9 +1,18 @@
 package main
 
+import (
+	"fmt"
+)
+
 //MatrixMultiply ...
 func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) []int {
 	//fmt.Println("Matrix Multiply: ", len(inputA), " x ", len(b))
 
+	fmt.Println("InputA: ", inputA)
+
+	fmt.Println()
+
+	fmt.Println("InputB: ", inputB)
 	outputMatrix := make([]int, width*width)
 	var start = id * len(inputA) / idCount
 	var end = (id + 1) * len(inputA) / idCount
