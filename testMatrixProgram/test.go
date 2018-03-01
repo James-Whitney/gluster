@@ -67,7 +67,6 @@ func testMatrixSum() {
 func testMatrixMultiplication() {
 	const maxArraySize int = 8
 	const processCount int = 1
-	const expected int = 0
 
 	fmt.Println("Multiplying Two Matrices...")
 
@@ -81,23 +80,29 @@ func testMatrixMultiplication() {
 	fillArray(inputB, 4)
 	printMatrix(inputB, maxArraySize)
 
+	output := make([]int, maxArraySize*maxArraySize)
+
 	for i := 0; i < processCount; i++ {
 		fmt.Println("Launching Runner: ", i)
-		//gluster.RunDist("functions.MatrixSum", reflect.TypeOf(sum), inputArray, maxArraySize, i, processCount)
+		gluster.RunDist("functions.MatrixSum", reflect.TypeOf(output), inputA, inputB, maxArraySize, i, processCount)
 
 	}
 
 	for i := 0; i < processCount; i++ {
-
+		for !(gluster.JobDone(i)) {
+		}
+		var partialOutput = gluster.GetReturn(i).([]int)
+		mergeArray(output, partialOutput)
 	}
-
+	fmt.Println("Result Matrix:")
+	printMatrix(output, maxArraySize)
 }
 
 func main() {
 	gluster.AddRunner("localhost")
 	gluster.ImportFunctionFile("functions/functions.go")
 
-	testMatrixSum()
-	//testMatrixMultiplication()
+	//testMatrixSum()
+	testMatrixMultiplication()
 
 }
