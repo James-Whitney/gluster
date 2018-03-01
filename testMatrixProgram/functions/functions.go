@@ -9,12 +9,12 @@ func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) 
 	var end = (id + 1) * len(inputA) / idCount
 
 	for row := start; row < end; row++ {
-		for col := 0; col < len(inputA); col++ {
+		for col := 0; col < width; col++ {
 			var Pvalue = 0
-			for k := 0; k < len(inputA); k++ {
-				Pvalue += inputA[row*len(inputA)+k] * inputB[k*len(inputA)+col]
+			for k := 0; k < width; k++ {
+				Pvalue += inputA[row*width+k] * inputB[k*width+col]
 			}
-			outputMatrix[row*len(inputA)+col] = Pvalue
+			outputMatrix[row*width+col] = Pvalue
 		}
 	}
 	return outputMatrix
