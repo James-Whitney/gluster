@@ -30,7 +30,7 @@ func printMatrix(x []int, size int) {
 
 func testMatrixSum() {
 	const maxArraySize int = 8
-	const processCount int = 10
+	const processCount int = 1
 	const expected int = 192
 
 	fmt.Println("Getting the Sum of a Matrix...")
@@ -64,23 +64,30 @@ func testMatrixSum() {
 	}
 }
 
+func testMatrixMultiplication() {
+	const maxArraySize int = 8
+	const processCount int = 1
+	const expected int = 0
+
+	fmt.Println("Multiplying Two Matrices...")
+
+	fmt.Println("Matrix A:")
+	inputA := make([]int, maxArraySize*maxArraySize)
+	fillArray(inputA, 3)
+	printMatrix(inputA, maxArraySize)
+
+	fmt.Println("Matrix B:")
+	inputB := make([]int, maxArraySize*maxArraySize)
+	fillArray(inputB, 4)
+	printMatrix(inputB, maxArraySize)
+
+}
+
 func main() {
 	gluster.AddRunner("localhost")
 	gluster.ImportFunctionFile("functions/functions.go")
 
 	testMatrixSum()
+	testMatrixMultiplication()
 
-	//fillArray(b, 2)
-	//returnArray := make([][]int, processCount)
-
-	//result := make([]int, maxArraySize*maxArraySize)
-
-	//wait
-	/*
-		fmt.Println("Waiting")
-		for !gluster.JobDone(id) {
-		}
-
-		fmt.Println("Got back", ret)
-	*/
 }
