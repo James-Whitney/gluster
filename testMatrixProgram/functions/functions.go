@@ -1,18 +1,6 @@
 package functions
 
 /*
-type Blah struct {
-	A int
-	B int
-}
-
-func Multiply(a, b int) Blah {
-	//*reply = args.A * args.B
-	fmt.Println("test", a, b)
-
-	return Blah{a + 128, a*b + 1}
-}
-
 func MatrixMultiply(a []int, b []int, width int, id int, idCount int) []int {
 	//fmt.Println("Matrix Multiply: ", len(a), " x ", len(b))
 

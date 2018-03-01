@@ -2,12 +2,10 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 
 	"../gluster/src/master"
 )
-
-const maxArraySize int = 8
-const processCount int = 10
 
 func fillArray(a []int, x int) {
 	for i := 0; i < len(a); i++ {
@@ -30,38 +28,52 @@ func printMatrix(x []int, size int) {
 	}
 }
 
+func testMatrixSum() {
+	const maxArraySize int = 8
+	const processCount int = 10
+	const expected int = 192
+
+	fmt.Println("Getting the Sum of a Matrix...")
+
+	inputArray := make([]int, maxArraySize*maxArraySize)
+	fillArray(inputArray, 3)
+	printMatrix(inputArray, maxArraySize)
+
+	var sum int
+
+	//LAUNCH SLAVES
+	for i := 0; i < processCount; i++ {
+		fmt.Println("Launching Runner: ", i)
+		gluster.RunDist("functions.MatrixSum", reflect.TypeOf(sum), inputArray, maxArraySize, i, processCount)
+		//c = MatrixMultiply(a, b, maxArraySize, i, processCount)
+	}
+
+	//WAIT FOR RETURNS FROM SLAVES
+	for i := 0; i < processCount; i++ {
+		for !(gluster.JobDone(i)) {
+		}
+		var particalSum = gluster.GetReturn(i).(int)
+		fmt.Println("Waited for: ", i, " Partial Sum: ", particalSum)
+		sum += particalSum
+	}
+	fmt.Print("Expected: ", expected, " Actual: ", sum)
+	if sum == expected {
+		fmt.Println(" SUCCESS")
+	} else {
+		fmt.Println(" FAILURE")
+	}
+}
+
 func main() {
 	gluster.AddRunner("localhost")
 	gluster.ImportFunctionFile("functions/functions.go")
 
-	a := make([]int, maxArraySize*maxArraySize)
-	//b := make([]int, maxArraySize*maxArraySize)
-	fillArray(a, 3)
-	printMatrix(a, maxArraySize)
-	var glusterResults [processCount]int
-	var result int = 0
+	testMatrixSum()
+
 	//fillArray(b, 2)
 	//returnArray := make([][]int, processCount)
 
 	//result := make([]int, maxArraySize*maxArraySize)
-
-	for i := 0; i < processCount; i++ {
-		//c := make([]int, maxArraySize*maxArraySize)
-		fmt.Println("Launching Runner: ", i)
-		gluster.RunDist("functions.MatrixSum", &glusterResults[i], a, maxArraySize, i, processCount)
-		//c = MatrixMultiply(a, b, maxArraySize, i, processCount)
-	}
-
-	//wait
-
-	for i := 0; i < processCount; i++ {
-		for !(gluster.JobDone(i)) {
-		}
-		fmt.Println("Waited for: ", i, " result: ", glusterResults[i])
-		result += glusterResults[i]
-	}
-
-	fmt.Println("Result of MatrixSum: ", result)
 
 	//wait
 	/*
