@@ -84,7 +84,7 @@ func testMatrixMultiplication() {
 
 	for i := 0; i < processCount; i++ {
 		fmt.Println("Launching Runner: ", i)
-		gluster.RunDist("functions.MatrixSum", reflect.TypeOf(output), inputA, inputB, maxArraySize, i, processCount)
+		gluster.RunDist("functions.MatrixMultiply", reflect.TypeOf(output), inputA, inputB, maxArraySize, i, processCount)
 
 	}
 
