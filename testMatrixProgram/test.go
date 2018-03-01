@@ -40,23 +40,24 @@ func testMatrixSum() {
 	fillArray(inputArray, 3)
 	printMatrix(inputArray, maxArraySize)
 
+	var runnerList []int
+
 	var sum int
 
 	//LAUNCH SLAVES
 	for i := 0; i < processCount; i++ {
 		fmt.Println("Launching Runner: ", i)
-		gluster.RunDist("functions.MatrixSum", reflect.TypeOf(sum), inputArray, maxArraySize, i, processCount)
-		//c = MatrixMultiply(a, b, maxArraySize, i, processCount)
+		runnerList = append(runnerList, gluster.RunDist("functions.MatrixSum", reflect.TypeOf(sum), inputArray, maxArraySize, i, processCount))
 	}
 
-	//WAIT FOR RETURNS FROM SLAVES
-	for i := 0; i < processCount; i++ {
-		for !(gluster.JobDone(i)) {
+	for _, runner := range runnerList {
+		for !(gluster.JobDone(runner)) {
 		}
-		var particalSum = gluster.GetReturn(i).(int)
-		fmt.Println("Waited for: ", i, " Partial Sum: ", particalSum)
+		var particalSum = gluster.GetReturn(runner).(int)
+		fmt.Println("Waited for: ", runner, " Partial Sum: ", particalSum)
 		sum += particalSum
 	}
+
 	fmt.Print("Expected: ", expected, " Actual: ", sum)
 	if sum == expected {
 		fmt.Println(" SUCCESS")
@@ -83,16 +84,17 @@ func testMatrixMultiplication() {
 
 	output := make([]int, maxArraySize*maxArraySize)
 
+	var runnerList []int
+
 	for i := 0; i < processCount; i++ {
 		fmt.Println("Launching Runner: ", i)
-		gluster.RunDist("functions.MatrixMultiply", reflect.TypeOf(output), inputA, inputB, maxArraySize, i, processCount)
-
+		runnerList = append(runnerList, gluster.RunDist("functions.MatrixMultiply", reflect.TypeOf(output), inputA, inputB, maxArraySize, i, processCount))
 	}
 
-	for i := 0; i < processCount; i++ {
-		for !(gluster.JobDone(i)) {
+	for _, runner := range runnerList {
+		for !(gluster.JobDone(runner)) {
 		}
-		var partialOutput = gluster.GetReturn(i).([]int)
+		var partialOutput = gluster.GetReturn(runner).([]int)
 		mergeArray(output, partialOutput)
 	}
 	fmt.Println("Result Matrix:")
