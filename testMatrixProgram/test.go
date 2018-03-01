@@ -30,7 +30,7 @@ func printMatrix(x []int, size int) {
 }
 
 func testMatrixSum() {
-	const maxArraySize int = 8
+	const maxArraySize int = 128
 	const processCount int = 1
 	const expected int = 192
 
@@ -67,7 +67,7 @@ func testMatrixSum() {
 }
 
 func testMatrixMultiplication() {
-	const maxArraySize int = 8
+	const maxArraySize int = 128
 	const processCount int = 1
 
 	fmt.Println("Multiplying Two Matrices...")
