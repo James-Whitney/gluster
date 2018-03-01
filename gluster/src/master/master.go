@@ -324,6 +324,6 @@ func runner_execute_function(run *runner, id int, funct string, file common.Func
 	}
 
 	//make job id as done
-	jobs[id].reply = tmp.Elem()
+	jobs[id].reply = tmp.Elem().Interface()
 	jobs[id].done = true
 }

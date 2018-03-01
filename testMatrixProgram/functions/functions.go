@@ -1,4 +1,4 @@
-package functions
+package main
 
 //MatrixMultiply ...
 func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) []int {
