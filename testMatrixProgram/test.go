@@ -81,6 +81,16 @@ func testMatrixMultiplication() {
 	fillArray(inputB, 4)
 	printMatrix(inputB, maxArraySize)
 
+	for i := 0; i < processCount; i++ {
+		fmt.Println("Launching Runner: ", i)
+		//gluster.RunDist("functions.MatrixSum", reflect.TypeOf(sum), inputArray, maxArraySize, i, processCount)
+
+	}
+
+	for i := 0; i < processCount; i++ {
+
+	}
+
 }
 
 func main() {
@@ -88,6 +98,6 @@ func main() {
 	gluster.ImportFunctionFile("functions/functions.go")
 
 	testMatrixSum()
-	testMatrixMultiplication()
+	//testMatrixMultiplication()
 
 }

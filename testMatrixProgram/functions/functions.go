@@ -1,33 +1,33 @@
 package functions
 
-/*
-func MatrixMultiply(a []int, b []int, width int, id int, idCount int) []int {
-	//fmt.Println("Matrix Multiply: ", len(a), " x ", len(b))
+//MatrixMultiply ...
+func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) []int {
+	//fmt.Println("Matrix Multiply: ", len(inputA), " x ", len(b))
 
-	c := make([]int, len(a))
-	var start = id * len(a) / idCount
-	var end = (id + 1) * len(a) / idCount
+	outputMatrix := make([]int, width*width)
+	var start = id * len(inputA) / idCount
+	var end = (id + 1) * len(inputA) / idCount
 
 	for row := start; row < end; row++ {
-		for col := 0; col < len(a); col++ {
+		for col := 0; col < len(inputA); col++ {
 			var Pvalue = 0
-			for k := 0; k < len(a); k++ {
-				Pvalue += a[row*len(a)+k] * b[k*len(a)+col]
+			for k := 0; k < len(inputA); k++ {
+				Pvalue += inputA[row*len(inputA)+k] * inputB[k*len(inputA)+col]
 			}
-			c[row*len(a)+col] = Pvalue
+			outputMatrix[row*len(inputA)+col] = Pvalue
 		}
 	}
-	return c
-}*/
+	return outputMatrix
+}
 
-//MatrixSum ...Gtes the sum of all the values in a matrix
-func MatrixSum(a []int, width int, id int, idCount int) int {
+//MatrixSum ... Gets the sum of all the values in inputA matrix
+func MatrixSum(inputA []int, width int, id int, idCount int) int {
 	var sum = 0
 	var start = id * width / idCount
 	var end = (id + 1) * width / idCount
 	for row := start; row < end; row++ {
 		for col := 0; col < width; col++ {
-			sum += a[row*width+col]
+			sum += inputA[row*width+col]
 		}
 	}
 	return sum
