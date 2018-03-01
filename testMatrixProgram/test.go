@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	"../gluster/src/master"
 )
@@ -99,10 +100,23 @@ func testMatrixMultiplication() {
 }
 
 func main() {
+	timer1 := time.Now()
+
 	gluster.AddRunner("localhost")
 	gluster.ImportFunctionFile("functions/functions.go")
 
-	//testMatrixSum()
+	timer2 := time.Now()
+
+	testMatrixSum()
+
+	timer3 := time.Now()
+
 	testMatrixMultiplication()
+
+	timerEnd := time.Now()
+
+	fmt.Println("Gluster Init Time: 	  ", timer2.Sub(timer1))
+	fmt.Println("testMatrixSum Time:   ", timer3.Sub(timer2))
+	fmt.Println("testMatrixMulti Time: ", timerEnd.Sub(timer3))
 
 }
