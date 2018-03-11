@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"reflect"
+	"strconv"
 	"time"
 
 	"../gluster/src/master"
@@ -98,8 +100,8 @@ func testMatrixMultiplication(maxArraySize int, processCount int) {
 }
 
 func main() {
-	ArraySize := 512
-	processCount := 1
+	ArraySize, _ := strconv.Atoi(os.Args[1])
+	processCount, _ := strconv.Atoi(os.Args[2])
 	timer1 := time.Now()
 
 	gluster.AddRunner("localhost")
@@ -110,7 +112,6 @@ func main() {
 	//testMatrixSum(ArraySize, processCount)
 
 	timer3 := time.Now()
-
 	testMatrixMultiplication(ArraySize, processCount)
 
 	timerEnd := time.Now()
