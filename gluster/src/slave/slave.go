@@ -1,8 +1,10 @@
 package main
 
 import (
-	"encoding/gob"
+	//"encoding/gob"
+	"encoding/json"
 	"fmt"
+	"bufio"
 	"io/ioutil"
 	"net"
 	"os/exec"
@@ -50,19 +52,22 @@ func wait_for_work() {
 }
 
 func handle_work(conn net.Conn) {
+	
+	var rw = bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
+	defer conn.Close()
 
-	var ctl = common.RecvByte(conn)
+	var ctl = common.RecvByte(rw)
 	debugPrint("Control received", ctl)
 
 	//different cases
 	if ctl == common.EXEC_FUNC {
-		exec_command(conn)
+		exec_command(rw)
 	} else if ctl == common.GET_INFO {
-		send_info(conn)
+		send_info(rw)
 	}
 }
 
-func check_for_file(conn net.Conn, execReq common.ExecRequest) {
+func check_for_file(rw *bufio.ReadWriter, execReq common.ExecRequest) {
 	//check if hashes match
 	var funcHere = false
 	funcListMut.RLock()
@@ -82,15 +87,15 @@ func check_for_file(conn net.Conn, execReq common.ExecRequest) {
 
 	//request file
 	debugPrint("Requesting file")
-	common.SendByte(conn, common.REQUESTING_FILE)
+	common.SendByte(rw, common.REQUESTING_FILE)
 
-	var resp = common.RecvByte(conn)
+	var resp = common.RecvByte(rw)
 	if resp != common.FILE_INCOMING {
 		//TODO error
 	}
 
 	//read file from network
-	dec := gob.NewDecoder(conn)
+	dec := json.NewDecoder(rw)
 	file := &common.FuncFileContent{}
 	dec.Decode(file)
 
@@ -152,19 +157,19 @@ func encodeFuncSig(funcType reflect.Type) common.FuncSignature {
 	return funcSig
 }
 
-func exec_command(conn net.Conn) {
+func exec_command(rw *bufio.ReadWriter) {
 	debugPrint("Executing Function")
 
 	//setup gob
-	encoder := gob.NewEncoder(conn)
-	decoder := gob.NewDecoder(conn)
+	encoder := json.NewEncoder(rw)
+	decoder := json.NewDecoder(rw)
 
 	//receive exec request
 	exec := &common.ExecRequest{}
 	decoder.Decode(exec)
 
 	//make sure the function file is here
-	check_for_file(conn, *exec)
+	check_for_file(rw, *exec)
 
 	//load in function file library
 	var path = exec.FuncFileName + fmt.Sprint(exec.Checksum) + ".so"
@@ -189,10 +194,11 @@ func exec_command(conn net.Conn) {
 
 	//request args and send function signature
 	debugPrint("Requesting Args")
-	common.SendByte(conn, common.REQUESTING_ARGS)
+	common.SendByte(rw, common.REQUESTING_ARGS)
 	encoder.Encode(encodeFuncSig(funcType))
+	rw.Flush()
 
-	if common.RecvByte(conn) != common.ARGS_INCOMING {
+	if common.RecvByte(rw) != common.ARGS_INCOMING {
 		return
 	}
 
@@ -208,7 +214,7 @@ func exec_command(conn net.Conn) {
 	}
 
 	//send ack
-	common.SendByte(conn, common.ACK)
+	common.SendByte(rw, common.ACK)
 
 	debugPrint("Got all args, calling function")
 
@@ -217,30 +223,36 @@ func exec_command(conn net.Conn) {
 
 	//encode and send back reply
 	if len(reply) > 0 {
-		sendReply(conn, reply[0].Interface())
+		fmt.Println(len(reply[0].Interface().([]int)))
+		sendReply(rw, reply[0].Interface())
 	}
 
 	debugPrint("Done calling function, response sent")
 }
 
-func sendReply(conn net.Conn, reply interface{}) {
+func sendReply(conn *bufio.ReadWriter, reply interface{}) {
 	//if response is pointer, dereference
 	debugPrint("Sending reply") //, reply)
-	enc := gob.NewEncoder(conn)
+	debugPrint(reflect.TypeOf(reply))
+
+	conn.WriteString("Hello there\n")
+
+	enc := json.NewEncoder(conn)
 	err := enc.Encode(reply)
 	if(err != nil){
 		fmt.Println("error encoding args", err)
 	}
+	conn.Flush()
 }
 
-func send_info(conn net.Conn) {
+func send_info(rw *bufio.ReadWriter) {
 	var info = common.RunnerInfo{}
 	info.Cores = runtime.NumCPU()
 	info.Arch = runtime.GOARCH
 	info.OS = runtime.GOOS
 
 	//write structure
-	sendReply(conn, info)
+	sendReply(rw, info)
 }
 
 /*

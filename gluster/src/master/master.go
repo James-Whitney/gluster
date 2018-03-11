@@ -1,16 +1,19 @@
 package gluster
 
 import (
-	"encoding/gob"
+	//"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"hash/crc32"
 	"io/ioutil"
+	"bufio"
 	"math/rand"
 	"net"
 	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 
 	"../common"
 )
@@ -27,7 +30,7 @@ type runner struct {
 
 type jobStatus struct {
 	done  bool
-	reply interface{}
+	reply reflect.Value
 }
 
 /*
@@ -36,6 +39,7 @@ type jobStatus struct {
 var runner_list []runner
 var file_list []common.FuncFileContent
 var jobs []jobStatus
+var jobStatusMut = &sync.RWMutex{}
 var debugFlag = true
 
 /*
@@ -68,9 +72,11 @@ func RunDist(funct string, reply reflect.Type, args ...interface{}) int {
 	//search imported files
 	for _, el := range file_list {
 		if strings.Compare(el.File.CallPrefix, fun_elements[0]) == 0 {
+			jobStatusMut.Lock()
 			//generate job id
 			var id = len(jobs)
-			jobs = append(jobs, jobStatus{false, nil})
+			jobs = append(jobs, jobStatus{false, reflect.ValueOf(nil)})
+			jobStatusMut.Unlock()
 
 			//tell runner to run the function
 			go runner_execute_function(cur_runner, id, fun_elements[1], el, reply, args)
@@ -180,22 +186,29 @@ func ImportFunctionFileSO(filename string) {
 
 //returns whether the job with the given id is done executing
 func JobDone(id int) bool {
+	jobStatusMut.RLock()
+	defer jobStatusMut.RUnlock()
+
 	//check for invalid id
 	if id < 0 || id >= len(jobs) {
 		return false
 	}
+
 
 	return jobs[id].done
 }
 
 //gives back the return value from the given job
 func GetReturn(id int) interface{} {
+	jobStatusMut.RLock()
+	defer jobStatusMut.RUnlock()
+
 	//check for invalid id
 	if id < 0 || id >= len(jobs) {
 		return nil
 	}
 
-	return jobs[id].reply
+	return jobs[id].reply.Elem().Interface()
 }
 
 //Turn on debugging
@@ -259,23 +272,27 @@ func runner_execute_function(run *runner, id int, funct string, file common.Func
 	}
 	defer conn.Close()
 
+	var rw = bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
+
 	//setup gob
-	encoder := gob.NewEncoder(conn)
-	decoder := gob.NewDecoder(conn)
+	encoder := json.NewEncoder(rw)
+	decoder := json.NewDecoder(rw)
 
 	//send exec request
 	var execReq = common.ExecRequest{file.File.Checksum, file.File.CallPrefix, funct}
-	common.SendByte(conn, common.EXEC_FUNC)
+	common.SendByte(rw, common.EXEC_FUNC)
 	encoder.Encode(execReq)
+	rw.Flush()
 
 	//get response
-	var resp = common.RecvByte(conn)
+	var resp = common.RecvByte(rw)
 
 	//function file needed, send it to runner
 	if resp == common.REQUESTING_FILE {
-		common.SendByte(conn, common.FILE_INCOMING)
+		common.SendByte(rw, common.FILE_INCOMING)
 		encoder.Encode(file)
-		resp = common.RecvByte(conn)
+		rw.Flush()
+		resp = common.RecvByte(rw)
 	}
 
 	var funcType common.FuncSignature
@@ -297,35 +314,39 @@ func runner_execute_function(run *runner, id int, funct string, file common.Func
 	}
 
 	//send all arguments
-	common.SendByte(conn, common.ARGS_INCOMING)
+	common.SendByte(rw, common.ARGS_INCOMING)
 	for _, arg := range args{
 		err := encoder.Encode(arg)
 		if err != nil {
         	fmt.Println("Error encoding argument")
 		}
 	}
+	rw.Flush()
 	debugPrint("Sent command")
 
 	//receive ack
-	if !common.RecvACK(conn) {
+	if !common.RecvACK(rw) {
 		//got NACK
 		debugPrint("Go NACK")
 		return
 	}
 
-	debugPrint("Sent command ACK")
+	debugPrint("Got command ACK")
 
 	//get back response
-	var tmp = reflect.New(reply)
+	jobStatusMut.Lock()
+	defer jobStatusMut.Unlock()
+
+	jobs[id].reply = reflect.New(reply)
 	if reply != nil {
-		dec := gob.NewDecoder(conn)
-		err = dec.Decode(tmp.Interface())
+		dec := json.NewDecoder(rw)
+		err = dec.Decode(jobs[id].reply)
 		if err != nil {
 			fmt.Println("Error decoding reply")
 		}
 	}
 
+
 	//make job id as done
-	jobs[id].reply = tmp.Elem().Interface()
 	jobs[id].done = true
 }

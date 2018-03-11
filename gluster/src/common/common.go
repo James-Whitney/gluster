@@ -1,7 +1,7 @@
 package common
 
 import(
-	"net"
+	"bufio"
 	"reflect"
 )
 
@@ -61,13 +61,14 @@ type FuncSignature struct {
 }
 
 
-func SendByte(conn net.Conn, b byte){
+func SendByte(conn *bufio.ReadWriter, b byte){
 	buf := make([]byte, 1)
 	buf[0] = b
 	conn.Write(buf)
+	conn.Flush()
 }
 
-func RecvByte(conn net.Conn) byte{
+func RecvByte(conn *bufio.ReadWriter) byte{
 	buf := make([]byte, 1)
 	var _, err = conn.Read(buf)
 	if(err != nil){
@@ -77,7 +78,7 @@ func RecvByte(conn net.Conn) byte{
 	return buf[0]
 }
 
-func RecvACK(conn net.Conn) bool{
+func RecvACK(conn *bufio.ReadWriter) bool{
 	if(RecvByte(conn) == 1){
 		return true
 	}
