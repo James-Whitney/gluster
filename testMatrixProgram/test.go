@@ -29,9 +29,7 @@ func printMatrix(x []int, size int) {
 	}
 }
 
-func testMatrixSum() {
-	const maxArraySize int = 128
-	const processCount int = 1
+func testMatrixSum(maxArraySize int, processCount int) {
 	const expected int = 192
 
 	fmt.Println("Getting the Sum of a Matrix...")
@@ -66,9 +64,7 @@ func testMatrixSum() {
 	}
 }
 
-func testMatrixMultiplication() {
-	const maxArraySize int = 128
-	const processCount int = 1
+func testMatrixMultiplication(maxArraySize int, processCount int) {
 
 	fmt.Println("Multiplying Two Matrices...")
 
@@ -102,6 +98,8 @@ func testMatrixMultiplication() {
 }
 
 func main() {
+	ArraySize := 1024
+	processCount := 1
 	timer1 := time.Now()
 
 	gluster.AddRunner("localhost")
@@ -109,11 +107,11 @@ func main() {
 
 	timer2 := time.Now()
 
-	testMatrixSum()
+	testMatrixSum(ArraySize, processCount)
 
 	timer3 := time.Now()
 
-	testMatrixMultiplication()
+	testMatrixMultiplication(ArraySize, processCount)
 
 	timerEnd := time.Now()
 
