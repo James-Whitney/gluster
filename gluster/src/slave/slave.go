@@ -206,7 +206,7 @@ func exec_command(conn net.Conn) {
 		}
 		args = append(args, tmpArg.Elem())
 	}
-	
+
 	//send ack
 	common.SendByte(conn, common.ACK)
 
@@ -225,7 +225,7 @@ func exec_command(conn net.Conn) {
 
 func sendReply(conn net.Conn, reply interface{}) {
 	//if response is pointer, dereference
-	debugPrint("Sending reply", reply)
+	debugPrint("Sending reply") //, reply)
 	enc := gob.NewEncoder(conn)
 	err := enc.Encode(reply)
 	if(err != nil){

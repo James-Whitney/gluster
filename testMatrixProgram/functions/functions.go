@@ -7,12 +7,12 @@ import (
 //MatrixMultiply ...
 func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) []int {
 	//fmt.Println("Matrix Multiply: ", len(inputA), " x ", len(b))
+	fmt.Println("Beginning Matrix Multiplication")
+	//fmt.Println("InputA: ", inputA)
 
-	fmt.Println("InputA: ", inputA)
+	//fmt.Println()
 
-	fmt.Println()
-
-	fmt.Println("InputB: ", inputB)
+	//fmt.Println("InputB: ", inputB)
 	outputMatrix := make([]int, width*width)
 	var start = id * width / idCount
 	var end = (id + 1) * width / idCount
@@ -26,11 +26,13 @@ func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) 
 			outputMatrix[row*width+col] = Pvalue
 		}
 	}
+	fmt.Println("Matrix Multiplication Complete")
 	return outputMatrix
 }
 
 //MatrixSum ... Gets the sum of all the values in inputA matrix
 func MatrixSum(inputA []int, width int, id int, idCount int) int {
+	fmt.Println("Beginning Matrix Sum")
 	var sum = 0
 	var start = id * width / idCount
 	var end = (id + 1) * width / idCount
@@ -39,5 +41,6 @@ func MatrixSum(inputA []int, width int, id int, idCount int) int {
 			sum += inputA[row*width+col]
 		}
 	}
+	fmt.Println("Matrix Sum Complete")
 	return sum
 }
