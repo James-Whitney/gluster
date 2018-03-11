@@ -36,7 +36,7 @@ func testMatrixSum(maxArraySize int, processCount int) {
 
 	inputArray := make([]int, maxArraySize*maxArraySize)
 	fillArray(inputArray, 3)
-	printMatrix(inputArray, maxArraySize)
+	//printMatrix(inputArray, maxArraySize)
 
 	var runnerList []int
 
@@ -71,12 +71,12 @@ func testMatrixMultiplication(maxArraySize int, processCount int) {
 	fmt.Println("Matrix A:")
 	inputA := make([]int, maxArraySize*maxArraySize)
 	fillArray(inputA, 3)
-	printMatrix(inputA, maxArraySize)
+	//printMatrix(inputA, maxArraySize)
 
 	fmt.Println("Matrix B:")
 	inputB := make([]int, maxArraySize*maxArraySize)
 	fillArray(inputB, 4)
-	printMatrix(inputB, maxArraySize)
+	//printMatrix(inputB, maxArraySize)
 
 	output := make([]int, maxArraySize*maxArraySize)
 
@@ -94,7 +94,7 @@ func testMatrixMultiplication(maxArraySize int, processCount int) {
 		mergeArray(output, partialOutput)
 	}
 	fmt.Println("Result Matrix:")
-	printMatrix(output, maxArraySize)
+	//printMatrix(output, maxArraySize)
 }
 
 func main() {
