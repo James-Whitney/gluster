@@ -98,7 +98,7 @@ func testMatrixMultiplication(maxArraySize int, processCount int) {
 }
 
 func main() {
-	ArraySize := 1024
+	ArraySize := 128
 	processCount := 1
 	timer1 := time.Now()
 
