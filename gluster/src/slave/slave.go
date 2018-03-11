@@ -29,7 +29,7 @@ func main() {
 
 func wait_for_work() {
 	//listen for connection from master
-	listen, err := net.Listen("tcp", "localhost:1234")
+	listen, err := net.Listen("tcp", ":1234")
 	if err != nil {
 		fmt.Println("Error setting up tcp connection: ", err)
 		return
