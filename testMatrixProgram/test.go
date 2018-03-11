@@ -107,7 +107,7 @@ func main() {
 
 	timer2 := time.Now()
 
-	testMatrixSum(ArraySize, processCount)
+	//testMatrixSum(ArraySize, processCount)
 
 	timer3 := time.Now()
 
