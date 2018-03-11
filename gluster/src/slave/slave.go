@@ -206,19 +206,21 @@ func exec_command(conn net.Conn) {
 		}
 		args = append(args, tmpArg.Elem())
 	}
+	
+	//send ack
+	common.SendByte(conn, common.ACK)
+
+	debugPrint("Got all args, calling function")
 
 	//call function
 	var reply = reflect.ValueOf(f).Call(args)
-
-	//send ack
-	common.SendByte(conn, common.ACK)
 
 	//encode and send back reply
 	if len(reply) > 0 {
 		sendReply(conn, reply[0].Interface())
 	}
 
-	debugPrint("Done calling function")
+	debugPrint("Done calling function, response sent")
 }
 
 func sendReply(conn net.Conn, reply interface{}) {
