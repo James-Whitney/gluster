@@ -306,6 +306,7 @@ func runner_execute_function(run *runner, id int, funct string, file common.Func
 	//receive ack
 	if !common.RecvACK(conn) {
 		//got NACK
+		debugPrint("Go NACK")
 		return
 	}
 
