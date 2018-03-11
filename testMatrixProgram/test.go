@@ -70,15 +70,11 @@ func testMatrixMultiplication(maxArraySize int, processCount int) {
 
 	fmt.Println("Multiplying Two Matrices...")
 
-	fmt.Println("Matrix A:")
 	inputA := make([]int, maxArraySize*maxArraySize)
 	fillArray(inputA, 3)
-	//printMatrix(inputA, maxArraySize)
 
-	fmt.Println("Matrix B:")
 	inputB := make([]int, maxArraySize*maxArraySize)
 	fillArray(inputB, 4)
-	//printMatrix(inputB, maxArraySize)
 
 	output := make([]int, maxArraySize*maxArraySize)
 
@@ -95,29 +91,53 @@ func testMatrixMultiplication(maxArraySize int, processCount int) {
 		var partialOutput = gluster.GetReturn(runner).([]int)
 		mergeArray(output, partialOutput)
 	}
-	fmt.Println("Result Matrix:")
+	//fmt.Println("Result Matrix:")
 	//printMatrix(output, maxArraySize)
+}
+
+func testRoutinesMultiplication(maxArraySize int, processCount int) {
+	inputA := make([]int, maxArraySize*maxArraySize)
+	fillArray(inputA, 3)
+	inputB := make([]int, maxArraySize*maxArraySize)
+	fillArray(inputB, 4)
+
+	output := make([]int, maxArraySize*maxArraySize)
+
+	var runnerList []int
+
+	for i := 0; i < processCount; i++ {
+		fmt.Println("Launching Runner: ", i)
+		runnerList = append(runnerList, gluster.RunDist("functions.RoutinesMatrixMultiply", reflect.TypeOf(output), inputA, inputB, maxArraySize, i, processCount))
+	}
+
+	for _, runner := range runnerList {
+		for !(gluster.JobDone(runner)) {
+		}
+		var partialOutput = gluster.GetReturn(runner).([]int)
+		mergeArray(output, partialOutput)
+	}
+
 }
 
 func main() {
 	ArraySize, _ := strconv.Atoi(os.Args[1])
 	processCount, _ := strconv.Atoi(os.Args[2])
-	timer1 := time.Now()
 
+	timer1 := time.Now()
 	gluster.AddRunner("localhost")
 	gluster.ImportFunctionFile("functions/functions.go")
-
 	timer2 := time.Now()
-
-	//testMatrixSum(ArraySize, processCount)
 
 	timer3 := time.Now()
 	testMatrixMultiplication(ArraySize, processCount)
+	timer4 := time.Now()
 
-	timerEnd := time.Now()
+	timer5 := time.Now()
+	testRoutinesMultiplication(ArraySize, processCount)
+	timer6 := time.Now()
 
-	fmt.Println("Gluster Init Time: 	  ", timer2.Sub(timer1))
-	fmt.Println("testMatrixSum Time:   ", timer3.Sub(timer2))
-	fmt.Println("testMatrixMulti Time: ", timerEnd.Sub(timer3))
+	fmt.Println("Gluster Init Time: 	      ", timer2.Sub(timer1))
+	fmt.Println("testMatrixMulti Time:     ", timer4.Sub(timer3))
+	fmt.Println("testMatrixMulti+goR Time: ", timer6.Sub(timer5))
 
 }
