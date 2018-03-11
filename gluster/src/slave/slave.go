@@ -227,7 +227,10 @@ func sendReply(conn net.Conn, reply interface{}) {
 	//if response is pointer, dereference
 	debugPrint("Sending reply", reply)
 	enc := gob.NewEncoder(conn)
-	enc.Encode(reply)
+	err := enc.Encode(reply)
+	if(err != nil){
+		fmt.Println("error encoding args", err)
+	}
 }
 
 func send_info(conn net.Conn) {

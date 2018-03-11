@@ -303,7 +303,10 @@ func runner_execute_function(run *runner, id int, funct string, file common.Func
 	//send all arguments
 	common.SendByte(conn, common.ARGS_INCOMING)
 	for _, arg := range args{
-		encoder.Encode(arg)
+		err := encoder.Encode(arg)
+		if err != nil {
+        	fmt.Println("Error encoding argument")
+		}
 	}
 	debugPrint("Sent command")
 
