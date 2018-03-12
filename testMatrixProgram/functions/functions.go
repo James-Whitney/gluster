@@ -14,7 +14,7 @@ func manyroutineMM(inputA []int, inputB []int, width int, row int, col int) {
 	outputMatrix[row*width+col] = Pvalue
 }
 
-func manygoRoutinesMatrixMultiply(inputA []int, inputB []int, width int) []int {
+func ManygoRoutinesMatrixMultiply(inputA []int, inputB []int, width int) []int {
 	outputMatrix = make([]int, width*width)
 	for row := 0; row < width; row++ {
 		for col := 0; col < width; col++ {

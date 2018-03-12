@@ -130,7 +130,7 @@ func testManyRoutinesMultiplication(maxArraySize int, processCount int) {
 
 	for i := 0; i < processCount; i++ {
 		fmt.Println("Launching Runner: ", i)
-		runnerList = append(runnerList, gluster.RunDist("functions.manygoRoutinesMatrixMultiply", reflect.TypeOf(output), inputA, inputB, maxArraySize, i, processCount))
+		runnerList = append(runnerList, gluster.RunDist("functions.ManygoRoutinesMatrixMultiply", reflect.TypeOf(output), inputA, inputB, maxArraySize, i, processCount))
 	}
 
 	for _, runner := range runnerList {
