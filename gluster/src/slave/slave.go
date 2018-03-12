@@ -1,8 +1,6 @@
 package main
 
 import (
-	//"encoding/gob"
-
 	"bufio"
 	"encoding/gob"
 	"fmt"
@@ -235,8 +233,6 @@ func sendReply(conn *bufio.ReadWriter, reply interface{}) {
 	//if response is pointer, dereference
 	debugPrint("Sending reply") //, reply)
 	debugPrint(reflect.TypeOf(reply))
-
-	conn.WriteString("Hello there\n")
 
 	enc := gob.NewEncoder(conn)
 	err := enc.Encode(reply)

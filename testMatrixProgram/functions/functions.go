@@ -16,11 +16,11 @@ func routineMM(inputA []int, inputB []int, width int, row int, channel chan<- in
 	return
 }
 
-func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) []int {
+func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, machineID int, machineCount int) []int {
 	fmt.Println("Beginning Routines Matrix Multiplication")
 	outputMatrix := make([]int, width*width)
-	var start = id * width / idCount
-	var end = (id + 1) * width / idCount
+	var start = machineID * width / machineCount
+	var end = (machineID + 1) * width / machineCount
 
 	var channels []chan int
 
