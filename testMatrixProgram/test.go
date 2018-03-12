@@ -124,8 +124,8 @@ func main() {
 	processCount, _ := strconv.Atoi(os.Args[2])
 
 	timer1 := time.Now()
-	gluster.AddRunner("127x35.csc.calpoyl.edu")
-	gluster.AddRunner("127x34.csc.calpoyl.edu")
+	gluster.AddRunner("127x35.csc.calpoly.edu")
+	gluster.AddRunner("127x34.csc.calpoly.edu")
 	gluster.ImportFunctionFile("functions/functions.go")
 	timer2 := time.Now()
 
