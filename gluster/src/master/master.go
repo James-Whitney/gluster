@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"hash/crc32"
 	"io/ioutil"
-	"math/rand"
 	"net"
 	"path/filepath"
 	"reflect"
@@ -41,6 +40,7 @@ var file_list []common.FuncFileContent
 var jobs []jobStatus
 var jobStatusMut = &sync.RWMutex{}
 var debugFlag = true
+var roundRobin = 0
 
 /*
 * Public Functions
@@ -230,7 +230,9 @@ func pick_runner() *runner {
 		fmt.Println("No runners available!!")
 		return nil
 	}
-	return &runner_list[rand.Intn(len(runner_list))]
+	roundRobin++
+	roundRobin %= len(runner_list)
+	return &runner_list[roundRobin]
 }
 
 func compareType(want common.FuncSignature, haveRep reflect.Type, haveArgs []interface{}) bool {
