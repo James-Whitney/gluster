@@ -19,7 +19,7 @@ func fillArray(a []int, x int) {
 func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) []int {
 	//fmt.Println("Matrix Multiply: ", len(inputA), " x ", len(b))
 	fmt.Println("Beginning Matrix Multiplication")
-	outputMatrix := make([]int, width*width)
+	outputMatrix = make([]int, width*width)
 	var start = id * width / idCount
 	var end = (id + 1) * width / idCount
 
@@ -48,7 +48,7 @@ func routineMM(inputA []int, inputB []int, width int, row int) {
 }
 
 func goRoutinesMatrixMultiply(inputA []int, inputB []int, width int) []int {
-	outputMatrix := make([]int, width*width)
+	outputMatrix = make([]int, width*width)
 	for row := 0; row < width; row++ {
 		go routineMM(inputA, inputB, width, row)
 	}
@@ -65,7 +65,7 @@ func manyroutineMM(inputA []int, inputB []int, width int, row int, col int) {
 }
 
 func manygoRoutinesMatrixMultiply(inputA []int, inputB []int, width int) []int {
-	outputMatrix := make([]int, width*width)
+	outputMatrix = make([]int, width*width)
 	for row := 0; row < width; row++ {
 		for col := 0; col < width; col++ {
 			go manyroutineMM(inputA, inputB, width, row, col)

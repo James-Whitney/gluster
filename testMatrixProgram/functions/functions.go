@@ -15,7 +15,7 @@ func manyroutineMM(inputA []int, inputB []int, width int, row int, col int) {
 }
 
 func manygoRoutinesMatrixMultiply(inputA []int, inputB []int, width int) []int {
-	outputMatrix := make([]int, width*width)
+	outputMatrix = make([]int, width*width)
 	for row := 0; row < width; row++ {
 		for col := 0; col < width; col++ {
 			go manyroutineMM(inputA, inputB, width, row, col)
@@ -38,7 +38,7 @@ func routineMM(inputA []int, inputB []int, width int, row int) {
 func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, machineID int, machineCount int) []int {
 	fmt.Println("Beginning Routines Matrix Multiplication")
 
-	outputMatrix := make([]int, width*width)
+	outputMatrix = make([]int, width*width)
 	var start = machineID * width / machineCount
 	var end = (machineID + 1) * width / machineCount
 
@@ -53,7 +53,7 @@ func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, machineID int
 func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) []int {
 	//fmt.Println("Matrix Multiply: ", len(inputA), " x ", len(b))
 	fmt.Println("Beginning Matrix Multiplication")
-	outputMatrix := make([]int, width*width)
+	outputMatrix = make([]int, width*width)
 	var start = id * width / idCount
 	var end = (id + 1) * width / idCount
 
