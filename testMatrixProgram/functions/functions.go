@@ -4,40 +4,48 @@ import (
 	"fmt"
 )
 
-func routineMM(inputA []int, inputB []int, width int, row int, channel chan<- int) {
+var outputMatrix []int
+
+func manyroutineMM(inputA []int, inputB []int, width int, row int, col int) {
+	Pvalue := 0
+	for k := 0; k < width; k++ {
+		Pvalue += inputA[row*width+k] * inputB[k*width+col]
+	}
+	outputMatrix[row*width+col] = Pvalue
+}
+
+func manygoRoutinesMatrixMultiply(inputA []int, inputB []int, width int) []int {
+	outputMatrix := make([]int, width*width)
+	for row := 0; row < width; row++ {
+		for col := 0; col < width; col++ {
+			go manyroutineMM(inputA, inputB, width, row, col)
+		}
+	}
+	return outputMatrix
+}
+
+func routineMM(inputA []int, inputB []int, width int, row int) {
 	for col := 0; col < width; col++ {
 		Pvalue := 0
 		for k := 0; k < width; k++ {
 			Pvalue += inputA[row*width+k] * inputB[k*width+col]
 		}
-		channel <- Pvalue
+		outputMatrix[row*width+col] = Pvalue
 	}
-	close(channel)
 	return
 }
 
 func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, machineID int, machineCount int) []int {
 	fmt.Println("Beginning Routines Matrix Multiplication")
+
 	outputMatrix := make([]int, width*width)
 	var start = machineID * width / machineCount
 	var end = (machineID + 1) * width / machineCount
 
-	var channels []chan int
-
 	for row := start; row < end; row++ {
-		ch := make(chan int)
-		channels = append(channels, ch)
-		go routineMM(inputA, inputB, width, row, ch)
-		//outputMatrix[row*width+col] = <-channels[row*width+col]
+		go routineMM(inputA, inputB, width, row)
 	}
-	for row := 0; row < width; row++ {
-		for col := 0; col < width; col++ {
-			outputMatrix[row*width+col] = <-channels[row]
-		}
-	}
-	//fmt.Println("output: ", outputMatrix)
 	fmt.Println("Matrix Routines Multiplication Complete")
-
 	return outputMatrix
 }
 

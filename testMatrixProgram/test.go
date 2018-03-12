@@ -116,7 +116,29 @@ func testRoutinesMultiplication(maxArraySize int, processCount int) {
 		var partialOutput = gluster.GetReturn(runner).([]int)
 		mergeArray(output, partialOutput)
 	}
+}
 
+func testManyRoutinesMultiplication(maxArraySize int, processCount int) {
+	inputA := make([]int, maxArraySize*maxArraySize)
+	fillArray(inputA, 3)
+	inputB := make([]int, maxArraySize*maxArraySize)
+	fillArray(inputB, 4)
+
+	output := make([]int, maxArraySize*maxArraySize)
+
+	var runnerList []int
+
+	for i := 0; i < processCount; i++ {
+		fmt.Println("Launching Runner: ", i)
+		runnerList = append(runnerList, gluster.RunDist("functions.manygoRoutinesMatrixMultiply", reflect.TypeOf(output), inputA, inputB, maxArraySize, i, processCount))
+	}
+
+	for _, runner := range runnerList {
+		for !(gluster.JobDone(runner)) {
+		}
+		var partialOutput = gluster.GetReturn(runner).([]int)
+		mergeArray(output, partialOutput)
+	}
 }
 
 func main() {
@@ -134,11 +156,16 @@ func main() {
 	timer4 := time.Now()
 
 	timer5 := time.Now()
-	//testRoutinesMultiplication(ArraySize, processCount)
+	testRoutinesMultiplication(ArraySize, processCount)
 	timer6 := time.Now()
+
+	timer7 := time.Now()
+	testManyRoutinesMultiplication(ArraySize, processCount)
+	timer8 := time.Now()
 
 	fmt.Println("Gluster Init Time: 	      ", timer2.Sub(timer1))
 	fmt.Println("testMatrixMulti Time:     ", timer4.Sub(timer3))
 	fmt.Println("testMatrixMulti+goR Time: ", timer6.Sub(timer5))
+	fmt.Println("testMatrixMulti+ManygoR Time: ", timer8.Sub(timer7))
 
 }

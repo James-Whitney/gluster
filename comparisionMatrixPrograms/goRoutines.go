@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+var outputMatrix []int
+
 func fillArray(a []int, x int) {
 	for i := 0; i < len(a); i++ {
 		a[i] = x
@@ -17,11 +19,6 @@ func fillArray(a []int, x int) {
 func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) []int {
 	//fmt.Println("Matrix Multiply: ", len(inputA), " x ", len(b))
 	fmt.Println("Beginning Matrix Multiplication")
-	//fmt.Println("InputA: ", inputA)
-
-	//fmt.Println()
-
-	//fmt.Println("InputB: ", inputB)
 	outputMatrix := make([]int, width*width)
 	var start = id * width / idCount
 	var end = (id + 1) * width / idCount
@@ -39,64 +36,41 @@ func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) 
 	return outputMatrix
 }
 
-func routineMM(inputA []int, inputB []int, width int, row int, channel chan<- int) {
+func routineMM(inputA []int, inputB []int, width int, row int) {
 	for col := 0; col < width; col++ {
 		Pvalue := 0
 		for k := 0; k < width; k++ {
 			Pvalue += inputA[row*width+k] * inputB[k*width+col]
 		}
-		channel <- Pvalue
+		outputMatrix[row*width+col] = Pvalue
 	}
-	close(channel)
 	return
 }
 
 func goRoutinesMatrixMultiply(inputA []int, inputB []int, width int) []int {
-	var channels []chan int
-
 	outputMatrix := make([]int, width*width)
 	for row := 0; row < width; row++ {
-		ch := make(chan int)
-		channels = append(channels, ch)
-		go routineMM(inputA, inputB, width, row, ch)
-		//outputMatrix[row*width+col] = <-channels[row*width+col]
-	}
-	for row := 0; row < width; row++ {
-		for col := 0; col < width; col++ {
-			outputMatrix[row*width+col] = <-channels[row]
-		}
+		go routineMM(inputA, inputB, width, row)
 	}
 	//fmt.Println("output: ", outputMatrix)
 	return outputMatrix
 }
 
-func manyroutineMM(inputA []int, inputB []int, width int, row int, col int, channel chan<- int) {
+func manyroutineMM(inputA []int, inputB []int, width int, row int, col int) {
 	Pvalue := 0
 	for k := 0; k < width; k++ {
 		Pvalue += inputA[row*width+k] * inputB[k*width+col]
 	}
-	channel <- Pvalue
-	close(channel)
+	outputMatrix[row*width+col] = Pvalue
 }
 
 func manygoRoutinesMatrixMultiply(inputA []int, inputB []int, width int) []int {
-	var channels []chan int
-
 	outputMatrix := make([]int, width*width)
 	for row := 0; row < width; row++ {
 		for col := 0; col < width; col++ {
-			ch := make(chan int)
-			channels = append(channels, ch)
-			go manyroutineMM(inputA, inputB, width, row, col, ch)
-			//outputMatrix[row*width+col] = <-channels[row*width+col]
+			go manyroutineMM(inputA, inputB, width, row, col)
 		}
 	}
-	for row := 0; row < width; row++ {
-		for col := 0; col < width; col++ {
-			outputMatrix[row*width+col] = <-channels[row*width+col]
-		}
-	}
-	//fmt.Println("output: ", outputMatrix)
 	return outputMatrix
 }
 
@@ -125,8 +99,8 @@ func main() {
 	manygoRoutinesMatrixMultiply(matrixA, matrixB, ArraySize)
 	timer6 := time.Now()
 
-	fmt.Println("Sequential time:       ", timer2.Sub(timer1))
-	fmt.Println("GoRoutines time:       ", timer4.Sub(timer3))
-	fmt.Println("GoRoutines many time:  ", timer6.Sub(timer5))
+	fmt.Println("Sequential time:        ", timer2.Sub(timer1))
+	fmt.Println("GoRoutines by row time: ", timer4.Sub(timer3))
+	fmt.Println("GoRoutines by ele time: ", timer6.Sub(timer5))
 
 }
