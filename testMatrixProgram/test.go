@@ -148,6 +148,12 @@ func main() {
 	timer1 := time.Now()
 	gluster.AddRunner("127x35.csc.calpoly.edu")
 	gluster.AddRunner("127x34.csc.calpoly.edu")
+	gluster.AddRunner("127x33.csc.calpoly.edu")
+	gluster.AddRunner("127x32.csc.calpoly.edu")
+	gluster.AddRunner("127x31.csc.calpoly.edu")
+	gluster.AddRunner("127x30.csc.calpoly.edu")
+	gluster.AddRunner("127x29.csc.calpoly.edu")
+	gluster.AddRunner("127x28.csc.calpoly.edu")
 	gluster.ImportFunctionFile("functions/functions.go")
 	timer2 := time.Now()
 
