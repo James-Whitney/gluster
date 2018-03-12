@@ -14,9 +14,11 @@ func manyroutineMM(inputA []int, inputB []int, width int, row int, col int) {
 	outputMatrix[row*width+col] = Pvalue
 }
 
-func ManygoRoutinesMatrixMultiply(inputA []int, inputB []int, width int) []int {
+func ManygoRoutinesMatrixMultiply(inputA []int, inputB []int, width int, machineID int, machineCount int) []int {
 	outputMatrix = make([]int, width*width)
-	for row := 0; row < width; row++ {
+	var start = machineID * width / machineCount
+	var end = (machineID + 1) * width / machineCount
+	for row := start; row < end; row++ {
 		for col := 0; col < width; col++ {
 			go manyroutineMM(inputA, inputB, width, row, col)
 		}
