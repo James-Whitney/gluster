@@ -30,7 +30,7 @@ type runner struct {
 
 type jobStatus struct {
 	done  bool
-	reply reflect.Value
+	reply interface{}
 }
 
 /*
@@ -207,7 +207,7 @@ func GetReturn(id int) interface{} {
 		return nil
 	}
 
-	return jobs[id].reply.Elem().Interface()
+	return jobs[id].reply
 }
 
 //Turn on debugging
@@ -333,18 +333,20 @@ func runner_execute_function(run *runner, id int, funct string, file common.Func
 	debugPrint("Got command ACK")
 
 	//get back response
-	jobStatusMut.Lock()
-	defer jobStatusMut.Unlock()
-
-	jobs[id].reply = reflect.New(reply)
+	var tmp = reflect.New(reply)
 	if reply != nil {
-		dec := gob.NewDecoder(rw)
-		err = dec.Decode(jobs[id].reply)
+		dec := gob.NewDecoder(conn)
+		err = dec.Decode(tmp.Interface())
 		if err != nil {
 			fmt.Println("Error decoding reply")
 		}
 	}
 
+	// lock the job struct
+	jobStatusMut.Lock()
+	defer jobStatusMut.Unlock()
+
 	//make job id as done
+	jobs[id].reply = tmp.Elem().Interface()
 	jobs[id].done = true
 }
