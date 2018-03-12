@@ -134,7 +134,7 @@ func main() {
 	timer4 := time.Now()
 
 	timer5 := time.Now()
-	testRoutinesMultiplication(ArraySize, processCount)
+	//testRoutinesMultiplication(ArraySize, processCount)
 	timer6 := time.Now()
 
 	fmt.Println("Gluster Init Time: 	      ", timer2.Sub(timer1))
