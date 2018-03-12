@@ -232,7 +232,7 @@ func pick_runner() *runner {
 	}
 	roundRobin++
 	roundRobin %= len(runner_list)
-	return &runner_list[roundRobin]
+	return &(runner_list[roundRobin])
 }
 
 func compareType(want common.FuncSignature, haveRep reflect.Type, haveArgs []interface{}) bool {
