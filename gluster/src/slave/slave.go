@@ -2,9 +2,10 @@ package main
 
 import (
 	//"encoding/gob"
-	"encoding/json"
-	"fmt"
+
 	"bufio"
+	"encoding/gob"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"os/exec"
@@ -52,7 +53,7 @@ func wait_for_work() {
 }
 
 func handle_work(conn net.Conn) {
-	
+
 	var rw = bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
 	defer conn.Close()
 
@@ -95,7 +96,7 @@ func check_for_file(rw *bufio.ReadWriter, execReq common.ExecRequest) {
 	}
 
 	//read file from network
-	dec := json.NewDecoder(rw)
+	dec := gob.NewDecoder(rw)
 	file := &common.FuncFileContent{}
 	dec.Decode(file)
 
@@ -161,8 +162,8 @@ func exec_command(rw *bufio.ReadWriter) {
 	debugPrint("Executing Function")
 
 	//setup gob
-	encoder := json.NewEncoder(rw)
-	decoder := json.NewDecoder(rw)
+	encoder := gob.NewEncoder(rw)
+	decoder := gob.NewDecoder(rw)
 
 	//receive exec request
 	exec := &common.ExecRequest{}
@@ -237,9 +238,9 @@ func sendReply(conn *bufio.ReadWriter, reply interface{}) {
 
 	conn.WriteString("Hello there\n")
 
-	enc := json.NewEncoder(conn)
+	enc := gob.NewEncoder(conn)
 	err := enc.Encode(reply)
-	if(err != nil){
+	if err != nil {
 		fmt.Println("error encoding args", err)
 	}
 	conn.Flush()

@@ -2,11 +2,11 @@ package gluster
 
 import (
 	//"encoding/gob"
-	"encoding/json"
+	"bufio"
+	"encoding/gob"
 	"fmt"
 	"hash/crc32"
 	"io/ioutil"
-	"bufio"
 	"math/rand"
 	"net"
 	"path/filepath"
@@ -194,7 +194,6 @@ func JobDone(id int) bool {
 		return false
 	}
 
-
 	return jobs[id].done
 }
 
@@ -275,8 +274,8 @@ func runner_execute_function(run *runner, id int, funct string, file common.Func
 	var rw = bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
 
 	//setup gob
-	encoder := json.NewEncoder(rw)
-	decoder := json.NewDecoder(rw)
+	encoder := gob.NewEncoder(rw)
+	decoder := gob.NewDecoder(rw)
 
 	//send exec request
 	var execReq = common.ExecRequest{file.File.Checksum, file.File.CallPrefix, funct}
@@ -315,10 +314,10 @@ func runner_execute_function(run *runner, id int, funct string, file common.Func
 
 	//send all arguments
 	common.SendByte(rw, common.ARGS_INCOMING)
-	for _, arg := range args{
+	for _, arg := range args {
 		err := encoder.Encode(arg)
 		if err != nil {
-        	fmt.Println("Error encoding argument")
+			fmt.Println("Error encoding argument")
 		}
 	}
 	rw.Flush()
@@ -339,13 +338,12 @@ func runner_execute_function(run *runner, id int, funct string, file common.Func
 
 	jobs[id].reply = reflect.New(reply)
 	if reply != nil {
-		dec := json.NewDecoder(rw)
+		dec := gob.NewDecoder(rw)
 		err = dec.Decode(jobs[id].reply)
 		if err != nil {
 			fmt.Println("Error decoding reply")
 		}
 	}
-
 
 	//make job id as done
 	jobs[id].done = true
