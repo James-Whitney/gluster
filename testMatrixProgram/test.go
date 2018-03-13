@@ -107,6 +107,7 @@ func testMatrixMultiplication(maxArraySize int, processCount int) {
 
 	if !verifyOutput(output, maxArraySize) {
 		fmt.Println("Output array incorrect!!!")
+		printMatrix(output, maxArraySize)
 	}
 }
 
@@ -134,6 +135,7 @@ func testRoutinesMultiplication(maxArraySize int, processCount int) {
 
 	if !verifyOutput(output, maxArraySize) {
 		fmt.Println("Output array incorrect!!!")
+		printMatrix(output, maxArraySize)
 	}
 }
 
@@ -161,6 +163,7 @@ func testManyRoutinesMultiplication(maxArraySize int, processCount int) {
 
 	if !verifyOutput(output, maxArraySize) {
 		fmt.Println("Output array incorrect!!!")
+		printMatrix(output, maxArraySize)
 	}
 }
 

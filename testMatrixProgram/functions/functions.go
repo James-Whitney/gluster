@@ -78,7 +78,7 @@ func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) 
 			outputMatrix[row*width+col] = Pvalue
 		}
 	}
-	printMatrix(outputMatrix, width)
+	//printMatrix(outputMatrix, width)
 	return outputMatrix
 }
 
