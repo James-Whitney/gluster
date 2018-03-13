@@ -35,11 +35,11 @@ func printMatrix(x []int, size int) {
 
 func verifyOutput(output []int, width int) bool {
 	for i := range output {
-		if(i != 2*width){
+		if i != 2*width {
 			return false
 		}
 	}
-	return true;
+	return true
 }
 
 func testMatrixSum(maxArraySize int, processCount int) {
@@ -105,7 +105,7 @@ func testMatrixMultiplication(maxArraySize int, processCount int) {
 	//fmt.Println("Result Matrix:")
 	//printMatrix(output, maxArraySize)
 
-	if(!verifyOutput(output, maxArraySize)){
+	if !verifyOutput(output, maxArraySize) {
 		fmt.Println("Output array incorrect!!!")
 	}
 }
@@ -155,7 +155,7 @@ func testManyRoutinesMultiplication(maxArraySize int, processCount int) {
 		mergeArray(output, partialOutput)
 	}
 
-	if(!verifyOutput(output, maxArraySize)){
+	if !verifyOutput(output, maxArraySize) {
 		fmt.Println("Output array incorrect!!!")
 	}
 }
