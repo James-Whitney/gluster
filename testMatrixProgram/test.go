@@ -185,11 +185,15 @@ func addRunners() {
 func main() {
 	ArraySize, _ := strconv.Atoi(os.Args[1])
 	processCount, _ := strconv.Atoi(os.Args[2])
-	debug, _ := strconv.Atob(os.Args[3])
+	debug, _ := strconv.Atoi(os.Args[3])
 
 	timer1 := time.Now()
 	addRunners()
-	gluster.SetDebug(false)
+	if debug == 1 {
+		gluster.SetDebug(true)
+	} else {
+		gluster.SetDebug(false)
+	}
 	gluster.ImportFunctionFile("functions/functions.go")
 	timer2 := time.Now()
 
