@@ -141,11 +141,53 @@ func testManyRoutinesMultiplication(maxArraySize int, processCount int) {
 	}
 }
 
+func addRunners() {
+
+	gluster.AddRunner("127x01.csc.calpoly.edu")
+	gluster.AddRunner("127x02.csc.calpoly.edu")
+	//gluster.AddRunner("127x03.csc.calpoly.edu")
+	gluster.AddRunner("127x04.csc.calpoly.edu")
+	gluster.AddRunner("127x05.csc.calpoly.edu")
+	gluster.AddRunner("127x06.csc.calpoly.edu")
+	gluster.AddRunner("127x07.csc.calpoly.edu")
+	gluster.AddRunner("127x08.csc.calpoly.edu")
+	gluster.AddRunner("127x09.csc.calpoly.edu")
+	gluster.AddRunner("127x10.csc.calpoly.edu")
+	gluster.AddRunner("127x11.csc.calpoly.edu")
+	gluster.AddRunner("127x12.csc.calpoly.edu")
+	gluster.AddRunner("127x13.csc.calpoly.edu")
+	gluster.AddRunner("127x14.csc.calpoly.edu")
+	gluster.AddRunner("127x15.csc.calpoly.edu")
+	gluster.AddRunner("127x16.csc.calpoly.edu")
+	gluster.AddRunner("127x17.csc.calpoly.edu")
+	gluster.AddRunner("127x18.csc.calpoly.edu")
+	gluster.AddRunner("127x19.csc.calpoly.edu")
+	gluster.AddRunner("127x20.csc.calpoly.edu")
+	gluster.AddRunner("127x21.csc.calpoly.edu")
+	gluster.AddRunner("127x22.csc.calpoly.edu")
+	gluster.AddRunner("127x23.csc.calpoly.edu")
+	//gluster.AddRunner("127x24.csc.calpoly.edu")
+	gluster.AddRunner("127x25.csc.calpoly.edu")
+	gluster.AddRunner("127x26.csc.calpoly.edu")
+	gluster.AddRunner("127x27.csc.calpoly.edu")
+	gluster.AddRunner("127x28.csc.calpoly.edu")
+	gluster.AddRunner("127x29.csc.calpoly.edu")
+	gluster.AddRunner("127x30.csc.calpoly.edu")
+	gluster.AddRunner("127x31.csc.calpoly.edu")
+	gluster.AddRunner("127x32.csc.calpoly.edu")
+	gluster.AddRunner("127x33.csc.calpoly.edu")
+	//gluster.AddRunner("127x34.csc.calpoly.edu")
+	gluster.AddRunner("127x35.csc.calpoly.edu")
+	gluster.AddRunner("127x36.csc.calpoly.edu")
+	gluster.AddRunner("127x37.csc.calpoly.edu")
+}
+
 func main() {
 	ArraySize, _ := strconv.Atoi(os.Args[1])
 	processCount, _ := strconv.Atoi(os.Args[2])
 
 	timer1 := time.Now()
+	addRunners()
 	gluster.AddRunner("127x35.csc.calpoly.edu")
 	gluster.AddRunner("127x34.csc.calpoly.edu")
 	gluster.AddRunner("127x33.csc.calpoly.edu")
