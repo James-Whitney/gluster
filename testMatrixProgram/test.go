@@ -145,20 +145,25 @@ func testManyRoutinesMultiplication(maxArraySize int, processCount int) {
 	inputB := make([]int, maxArraySize*maxArraySize)
 	fillArray(inputB, 2)
 
-	output := make([]int, maxArraySize*maxArraySize)
+	var output []int
 
 	var runnerList []int
 
 	for i := 0; i < processCount; i++ {
 		fmt.Println("Launching Runner: ", i)
-		runnerList = append(runnerList, gluster.RunDist("functions.ManygoRoutinesMatrixMultiply", reflect.TypeOf(output), inputA, inputB, maxArraySize, i, processCount))
+		var start = (i * maxArraySize / processCount)
+		var end = ((i + 1) * maxArraySize / processCount)
+		var rowCount = end - start
+		runnerList = append(runnerList, gluster.RunDist("functions.ManygoRoutinesMatrixMultiply", reflect.TypeOf(output),
+			inputA[(start*maxArraySize):(end*maxArraySize-1)], inputB, maxArraySize, rowCount))
 	}
 
 	for _, runner := range runnerList {
 		for !(gluster.JobDone(runner)) {
 		}
 		var partialOutput = gluster.GetReturn(runner).([]int)
-		mergeArray(output, partialOutput)
+		output = append(output, partialOutput...)
+		//mergeArray(output, partialOutput)
 	}
 
 	if !verifyOutput(output, maxArraySize) {

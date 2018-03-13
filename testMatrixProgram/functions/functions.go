@@ -38,13 +38,10 @@ func ManygoRoutinesMatrixMultiply(inputA []int, inputB []int, width int, machine
 	return outputMatrix
 }
 
-func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, machineID int, machineCount int) []int {
+func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, rowCount int) []int {
 	var wg sync.WaitGroup
-	outputMatrix := make([]int, width*width)
-
-	var machineStart = machineID * width / machineCount
-	var machineEnd = (machineID + 1) * width / machineCount
-	for row := machineStart; row < machineEnd; row++ {
+	outputMatrix := make([]int, rowCount*width)
+	for row := 0; row < rowCount; row++ {
 		wg.Add(1)
 		go func(rowMM int) {
 			for col := 0; col < width; col++ {
