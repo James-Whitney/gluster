@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"runtime"
 	"sync"
 )
 
@@ -45,29 +44,20 @@ func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, machineID int
 
 	var machineStart = machineID * width / machineCount
 	var machineEnd = (machineID + 1) * width / machineCount
-
-	threads := runtime.GOMAXPROCS(0) * 2
-	if threads > runtime.NumCPU() {
-		threads = runtime.NumCPU() * 2
-	}
-	for t := 0; t < threads; t++ {
-		var threadStart = ((t * (machineEnd - machineStart)) / threads) + machineStart
-		var threadEnd = (((t + 1) * (machineEnd - machineStart)) / threads) + machineStart
-		for row := threadStart; row < threadEnd; row++ {
-			wg.Add(1)
-			go func(rowMM, threadStartMM, threadEndMM int) {
-				for col := 0; col < width; col++ {
-					Pvalue := 0
-					for k := 0; k < width; k++ {
-						Pvalue += inputA[rowMM*width+k] * inputB[k*width+col]
-					}
-					outputMatrix[rowMM*width+col] = Pvalue
+	for row := machineStart; row < machineEnd; row++ {
+		wg.Add(1)
+		go func(rowMM int) {
+			for col := 0; col < width; col++ {
+				Pvalue := 0
+				for k := 0; k < width; k++ {
+					Pvalue += inputA[rowMM*width+k] * inputB[k*width+col]
 				}
-				defer wg.Done()
-			}(row, threadStart, threadEnd)
-		}
-		wg.Wait()
+				outputMatrix[rowMM*width+col] = Pvalue
+			}
+			defer wg.Done()
+		}(row)
 	}
+	wg.Wait()
 	return outputMatrix
 }
 
