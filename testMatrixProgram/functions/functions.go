@@ -46,9 +46,9 @@ func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, machineID int
 	var machineStart = machineID * width / machineCount
 	var machineEnd = (machineID + 1) * width / machineCount
 
-	threads := runtime.GOMAXPROCS(0)
+	threads := runtime.GOMAXPROCS(0) * 2
 	if threads > runtime.NumCPU() {
-		threads = runtime.NumCPU()
+		threads = runtime.NumCPU() * 2
 	}
 	for t := 0; t < threads; t++ {
 		var threadStart = ((t * (machineEnd - machineStart)) / threads) + machineStart
