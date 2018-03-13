@@ -131,6 +131,10 @@ func testRoutinesMultiplication(maxArraySize int, processCount int) {
 		var partialOutput = gluster.GetReturn(runner).([]int)
 		mergeArray(output, partialOutput)
 	}
+
+	if !verifyOutput(output, maxArraySize) {
+		fmt.Println("Output array incorrect!!!")
+	}
 }
 
 func testManyRoutinesMultiplication(maxArraySize int, processCount int) {

@@ -4,8 +4,6 @@ import (
 	"fmt"
 )
 
-var outputMatrix []int
-
 func printMatrix(x []int, size int) {
 	for i := 0; i < size; i++ {
 		for j := 0; j < size; j++ {
@@ -15,7 +13,7 @@ func printMatrix(x []int, size int) {
 	}
 }
 
-func manyroutineMM(inputA []int, inputB []int, width int, row int, col int) {
+func manyroutineMM(outputMatrix []int, inputA []int, inputB []int, width int, row int, col int) {
 	Pvalue := 0
 	for k := 0; k < width; k++ {
 		Pvalue += inputA[row*width+k] * inputB[k*width+col]
@@ -24,19 +22,19 @@ func manyroutineMM(inputA []int, inputB []int, width int, row int, col int) {
 }
 
 func ManygoRoutinesMatrixMultiply(inputA []int, inputB []int, width int, machineID int, machineCount int) []int {
-	outputMatrix = make([]int, width*width)
+	outputMatrix := make([]int, width*width)
 	var start = machineID * width / machineCount
 	var end = (machineID + 1) * width / machineCount
 	for row := start; row < end; row++ {
 		for col := 0; col < width; col++ {
-			go manyroutineMM(inputA, inputB, width, row, col)
+			go manyroutineMM(outputMatrix, inputA, inputB, width, row, col)
 		}
 	}
 	printMatrix(outputMatrix, width)
 	return outputMatrix
 }
 
-func routineMM(inputA []int, inputB []int, width int, row int) {
+func routineMM(outputMatrix []int, inputA []int, inputB []int, width int, row int) {
 	for col := 0; col < width; col++ {
 		Pvalue := 0
 		for k := 0; k < width; k++ {
@@ -50,12 +48,12 @@ func routineMM(inputA []int, inputB []int, width int, row int) {
 func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, machineID int, machineCount int) []int {
 	fmt.Println("Beginning Routines Matrix Multiplication")
 
-	outputMatrix = make([]int, width*width)
+	outputMatrix := make([]int, width*width)
 	var start = machineID * width / machineCount
 	var end = (machineID + 1) * width / machineCount
 
 	for row := start; row < end; row++ {
-		go routineMM(inputA, inputB, width, row)
+		go routineMM(outputMatrix, inputA, inputB, width, row)
 	}
 	fmt.Println("Matrix Routines Multiplication Complete")
 	printMatrix(outputMatrix, width)
@@ -66,7 +64,7 @@ func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, machineID int
 func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) []int {
 	//fmt.Println("Matrix Multiply: ", len(inputA), " x ", len(b))
 	fmt.Println("Beginning Matrix Multiplication")
-	outputMatrix = make([]int, width*width)
+	outputMatrix := make([]int, width*width)
 	var start = id * width / idCount
 	var end = (id + 1) * width / idCount
 
