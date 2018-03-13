@@ -33,13 +33,22 @@ func printMatrix(x []int, size int) {
 	}
 }
 
+func verifyOutput(output []int, width int) bool {
+	for i := range output {
+		if(i != 2*width){
+			return false
+		}
+	}
+	return true;
+}
+
 func testMatrixSum(maxArraySize int, processCount int) {
 	const expected int = 192
 
 	fmt.Println("Getting the Sum of a Matrix...")
 
 	inputArray := make([]int, maxArraySize*maxArraySize)
-	fillArray(inputArray, 3)
+	fillArray(inputArray, 1)
 	//printMatrix(inputArray, maxArraySize)
 
 	var runnerList []int
@@ -73,10 +82,10 @@ func testMatrixMultiplication(maxArraySize int, processCount int) {
 	fmt.Println("Multiplying Two Matrices...")
 
 	inputA := make([]int, maxArraySize*maxArraySize)
-	fillArray(inputA, 3)
+	fillArray(inputA, 1)
 
 	inputB := make([]int, maxArraySize*maxArraySize)
-	fillArray(inputB, 4)
+	fillArray(inputB, 2)
 
 	output := make([]int, maxArraySize*maxArraySize)
 
@@ -95,13 +104,17 @@ func testMatrixMultiplication(maxArraySize int, processCount int) {
 	}
 	//fmt.Println("Result Matrix:")
 	//printMatrix(output, maxArraySize)
+
+	if(!verifyOutput(output, maxArraySize)){
+		fmt.Println("Output array incorrect!!!")
+	}
 }
 
 func testRoutinesMultiplication(maxArraySize int, processCount int) {
 	inputA := make([]int, maxArraySize*maxArraySize)
-	fillArray(inputA, 3)
+	fillArray(inputA, 1)
 	inputB := make([]int, maxArraySize*maxArraySize)
-	fillArray(inputB, 4)
+	fillArray(inputB, 2)
 
 	output := make([]int, maxArraySize*maxArraySize)
 
@@ -122,9 +135,9 @@ func testRoutinesMultiplication(maxArraySize int, processCount int) {
 
 func testManyRoutinesMultiplication(maxArraySize int, processCount int) {
 	inputA := make([]int, maxArraySize*maxArraySize)
-	fillArray(inputA, 3)
+	fillArray(inputA, 1)
 	inputB := make([]int, maxArraySize*maxArraySize)
-	fillArray(inputB, 4)
+	fillArray(inputB, 2)
 
 	output := make([]int, maxArraySize*maxArraySize)
 
@@ -140,6 +153,10 @@ func testManyRoutinesMultiplication(maxArraySize int, processCount int) {
 		}
 		var partialOutput = gluster.GetReturn(runner).([]int)
 		mergeArray(output, partialOutput)
+	}
+
+	if(!verifyOutput(output, maxArraySize)){
+		fmt.Println("Output array incorrect!!!")
 	}
 }
 

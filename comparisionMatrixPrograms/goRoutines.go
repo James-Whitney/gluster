@@ -15,6 +15,15 @@ func fillArray(a []int, x int) {
 	}
 }
 
+func verifyOutput(output []int, width int) bool {
+	for i := range output {
+		if(i != 2*width){
+			return false
+		}
+	}
+	return true;
+}
+
 //MatrixMultiply ...
 func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) []int {
 	//fmt.Println("Matrix Multiply: ", len(inputA), " x ", len(b))
@@ -33,6 +42,11 @@ func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) 
 		}
 	}
 	fmt.Println("Matrix Multiplication Complete")
+
+	if(!verifyOutput(outputMatrix, width)){
+		fmt.Println("Output array incorrect!!!")
+	}
+
 	return outputMatrix
 }
 
@@ -53,6 +67,11 @@ func goRoutinesMatrixMultiply(inputA []int, inputB []int, width int) []int {
 		go routineMM(inputA, inputB, width, row)
 	}
 	//fmt.Println("output: ", outputMatrix)
+
+	if(!verifyOutput(outputMatrix, width)){
+		fmt.Println("Output array incorrect!!!")
+	}
+
 	return outputMatrix
 }
 
@@ -71,6 +90,11 @@ func manygoRoutinesMatrixMultiply(inputA []int, inputB []int, width int) []int {
 			go manyroutineMM(inputA, inputB, width, row, col)
 		}
 	}
+
+	if(!verifyOutput(outputMatrix, width)){
+		fmt.Println("Output array incorrect!!!")
+	}
+
 	return outputMatrix
 }
 
@@ -80,9 +104,9 @@ func main() {
 
 	//create arrays
 	matrixA := make([]int, ArraySize*ArraySize)
-	fillArray(matrixA, 3)
+	fillArray(matrixA, 1)
 	matrixB := make([]int, ArraySize*ArraySize)
-	fillArray(matrixB, 4)
+	fillArray(matrixB, 2)
 
 	fmt.Println("Sequential MM...")
 	timer1 := time.Now()
