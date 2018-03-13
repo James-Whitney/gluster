@@ -154,8 +154,9 @@ func testManyRoutinesMultiplication(maxArraySize int, processCount int) {
 		var start = (i * maxArraySize / processCount)
 		var end = ((i + 1) * maxArraySize / processCount)
 		var rowCount = end - start
+		subSlice := inputA[(start * maxArraySize):(end*maxArraySize - 1)]
 		runnerList = append(runnerList, gluster.RunDist("functions.ManygoRoutinesMatrixMultiply", reflect.TypeOf(output),
-			inputA[(start*maxArraySize):(end*maxArraySize-1)], inputB, maxArraySize, rowCount))
+			subSlice, inputB, maxArraySize, rowCount))
 	}
 
 	for _, runner := range runnerList {
