@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sync"
 )
 
 func printMatrix(x []int, size int) {
@@ -13,57 +14,57 @@ func printMatrix(x []int, size int) {
 	}
 }
 
-func manyroutineMM(outputMatrix []int, inputA []int, inputB []int, width int, row int, col int) {
-	Pvalue := 0
-	for k := 0; k < width; k++ {
-		Pvalue += inputA[row*width+k] * inputB[k*width+col]
-	}
-	outputMatrix[row*width+col] = Pvalue
-}
-
 func ManygoRoutinesMatrixMultiply(inputA []int, inputB []int, width int, machineID int, machineCount int) []int {
+	var wg sync.WaitGroup
 	outputMatrix := make([]int, width*width)
+
 	var start = machineID * width / machineCount
 	var end = (machineID + 1) * width / machineCount
+
 	for row := start; row < end; row++ {
 		for col := 0; col < width; col++ {
-			go manyroutineMM(outputMatrix, inputA, inputB, width, row, col)
+			wg.Add(1)
+			go func(rowMM int, colMM int) {
+				Pvalue := 0
+				for k := 0; k < width; k++ {
+					Pvalue += inputA[rowMM*width+k] * inputB[k*width+colMM]
+				}
+				outputMatrix[rowMM*width+colMM] = Pvalue
+				defer wg.Done()
+			}(row, col)
 		}
 	}
-	printMatrix(outputMatrix, width)
+	wg.Wait()
 	return outputMatrix
 }
 
-func routineMM(outputMatrix []int, inputA []int, inputB []int, width int, row int) {
-	for col := 0; col < width; col++ {
-		Pvalue := 0
-		for k := 0; k < width; k++ {
-			Pvalue += inputA[row*width+k] * inputB[k*width+col]
-		}
-		outputMatrix[row*width+col] = Pvalue
-	}
-	return
-}
-
 func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, machineID int, machineCount int) []int {
-	fmt.Println("Beginning Routines Matrix Multiplication")
-
+	var wg sync.WaitGroup
 	outputMatrix := make([]int, width*width)
+
 	var start = machineID * width / machineCount
 	var end = (machineID + 1) * width / machineCount
 
 	for row := start; row < end; row++ {
-		go routineMM(outputMatrix, inputA, inputB, width, row)
+		wg.Add(1)
+		go func(rowMM int) {
+			for col := 0; col < width; col++ {
+				Pvalue := 0
+				for k := 0; k < width; k++ {
+					Pvalue += inputA[row*width+k] * inputB[k*width+col]
+				}
+				outputMatrix[row*width+col] = Pvalue
+			}
+			defer wg.Done()
+		}(row)
 	}
-	fmt.Println("Matrix Routines Multiplication Complete")
-	printMatrix(outputMatrix, width)
+	wg.Wait()
 	return outputMatrix
 }
 
 //MatrixMultiply ...
 func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) []int {
 	//fmt.Println("Matrix Multiply: ", len(inputA), " x ", len(b))
-	fmt.Println("Beginning Matrix Multiplication")
 	outputMatrix := make([]int, width*width)
 	var start = id * width / idCount
 	var end = (id + 1) * width / idCount
@@ -77,7 +78,6 @@ func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) 
 			outputMatrix[row*width+col] = Pvalue
 		}
 	}
-	fmt.Println("Matrix Multiplication Complete")
 	printMatrix(outputMatrix, width)
 	return outputMatrix
 }
