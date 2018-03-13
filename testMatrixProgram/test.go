@@ -123,7 +123,11 @@ func testRoutinesMultiplication(maxArraySize int, processCount int) {
 
 	for i := 0; i < processCount; i++ {
 		fmt.Println("Launching Runner: ", i)
-		runnerList = append(runnerList, gluster.RunDist("functions.RoutinesMatrixMultiply", reflect.TypeOf(output), inputA, inputB, maxArraySize, i, processCount))
+		var start = (i * maxArraySize / processCount)
+		var end = ((i + 1) * maxArraySize / processCount)
+		var rowCount = end - start
+		//subSlice := inputA[(start * maxArraySize):(end*maxArraySize - 1)]
+		runnerList = append(runnerList, gluster.RunDist("functions.RoutinesMatrixMultiply", reflect.TypeOf(output), inputA[(start*maxArraySize):(end*maxArraySize-1)], inputB, maxArraySize, rowCount))
 	}
 
 	for _, runner := range runnerList {
@@ -155,8 +159,7 @@ func testManyRoutinesMultiplication(maxArraySize int, processCount int) {
 		var end = ((i + 1) * maxArraySize / processCount)
 		var rowCount = end - start
 		//subSlice := inputA[(start * maxArraySize):(end*maxArraySize - 1)]
-		runnerList = append(runnerList, gluster.RunDist("functions.ManygoRoutinesMatrixMultiply", reflect.TypeOf(output),
-			inputA, inputB, maxArraySize, rowCount))
+		runnerList = append(runnerList, gluster.RunDist("functions.ManygoRoutinesMatrixMultiply", reflect.TypeOf(output), inputA, inputB, maxArraySize, rowCount))
 	}
 
 	for _, runner := range runnerList {
