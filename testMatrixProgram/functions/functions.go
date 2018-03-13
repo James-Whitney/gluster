@@ -6,6 +6,15 @@ import (
 
 var outputMatrix []int
 
+func printMatrix(x []int, size int) {
+	for i := 0; i < size; i++ {
+		for j := 0; j < size; j++ {
+			fmt.Print(x[i*size+j], " ")
+		}
+		fmt.Println()
+	}
+}
+
 func manyroutineMM(inputA []int, inputB []int, width int, row int, col int) {
 	Pvalue := 0
 	for k := 0; k < width; k++ {
@@ -23,6 +32,7 @@ func ManygoRoutinesMatrixMultiply(inputA []int, inputB []int, width int, machine
 			go manyroutineMM(inputA, inputB, width, row, col)
 		}
 	}
+	printMatrix(outputMatrix, width)
 	return outputMatrix
 }
 
@@ -48,6 +58,7 @@ func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, machineID int
 		go routineMM(inputA, inputB, width, row)
 	}
 	fmt.Println("Matrix Routines Multiplication Complete")
+	printMatrix(outputMatrix, width)
 	return outputMatrix
 }
 
@@ -69,6 +80,7 @@ func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) 
 		}
 	}
 	fmt.Println("Matrix Multiplication Complete")
+	printMatrix(outputMatrix, width)
 	return outputMatrix
 }
 

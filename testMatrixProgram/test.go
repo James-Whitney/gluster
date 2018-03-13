@@ -34,7 +34,7 @@ func printMatrix(x []int, size int) {
 }
 
 func verifyOutput(output []int, width int) bool {
-	for i := range output {
+	for _, i := range output {
 		if i != 2*width {
 			return false
 		}
