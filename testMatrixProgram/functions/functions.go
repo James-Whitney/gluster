@@ -43,30 +43,31 @@ func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, machineID int
 	var wg sync.WaitGroup
 	outputMatrix := make([]int, width*width)
 
-	var start = machineID * width / machineCount
-	var end = (machineID + 1) * width / machineCount
+	var machineStart = machineID * width / machineCount
+	var machineEnd = (machineID + 1) * width / machineCount
 
 	threads := runtime.GOMAXPROCS(0)
 	if threads > runtime.NumCPU() {
 		threads = runtime.NumCPU()
 	}
-	t := 0
-	for row := start; row < end; row++ {
-		wg.Add(1)
-		threadStart := t * width / threads
-		threadEnd := (t + 1) * width / threads
-		go func(rowMM, threadStartMM, threadEndMM int) {
-			for col := threadStartMM; col < threadEnd; col++ {
-				Pvalue := 0
-				for k := 0; k < width; k++ {
-					Pvalue += inputA[rowMM*width+k] * inputB[k*width+col]
+	for t := 0; t < threads; t++ {
+		var threadStart = ((t * (machineEnd - machineStart)) / threads) + machineStart
+		var threadEnd = (((t + 1) * (machineEnd - machineStart)) / threads) + machineStart
+		for row := threadStart; row < threadEnd; row++ {
+			wg.Add(1)
+			go func(rowMM, threadStartMM, threadEndMM int) {
+				for col := 0; col < width; col++ {
+					Pvalue := 0
+					for k := 0; k < width; k++ {
+						Pvalue += inputA[rowMM*width+k] * inputB[k*width+col]
+					}
+					outputMatrix[rowMM*width+col] = Pvalue
 				}
-				outputMatrix[rowMM*width+col] = Pvalue
-			}
-			defer wg.Done()
-		}(row, threadStart, threadEnd)
+				defer wg.Done()
+			}(row, threadStart, threadEnd)
+		}
+		wg.Wait()
 	}
-	wg.Wait()
 	return outputMatrix
 }
 
