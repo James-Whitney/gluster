@@ -51,9 +51,9 @@ func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, machineID int
 			for col := 0; col < width; col++ {
 				Pvalue := 0
 				for k := 0; k < width; k++ {
-					Pvalue += inputA[row*width+k] * inputB[k*width+col]
+					Pvalue += inputA[rowMM*width+k] * inputB[k*width+col]
 				}
-				outputMatrix[row*width+col] = Pvalue
+				outputMatrix[rowMM*width+col] = Pvalue
 			}
 			defer wg.Done()
 		}(row)
