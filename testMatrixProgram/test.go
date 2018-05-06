@@ -25,12 +25,14 @@ func mergeArray(d []int, c []int) {
 }
 
 func printMatrix(x []int, size int) {
+	fmt.Println("Matrix with size", size)
 	for i := 0; i < size; i++ {
 		for j := 0; j < size; j++ {
 			fmt.Print(x[i*size+j], " ")
 		}
 		fmt.Println()
 	}
+	fmt.Println();
 }
 
 func verifyOutput(output []int, width int) bool {
@@ -87,23 +89,24 @@ func testMatrixMultiplication(maxArraySize int, processCount int) {
 	inputB := make([]int, maxArraySize*maxArraySize)
 	fillArray(inputB, 2)
 
-	output := make([]int, maxArraySize*maxArraySize)
+	output := make([]int, 0)
 
 	var runnerList []int
 
 	for i := 0; i < processCount; i++ {
 		fmt.Println("Launching Runner: ", i)
-		runnerList = append(runnerList, gluster.RunDist("functions.MatrixMultiply", reflect.TypeOf(output), inputA, inputB, maxArraySize, i, processCount))
+		var start = (i * maxArraySize / processCount)
+		var end = ((i + 1) * maxArraySize / processCount)
+		var rowCount = end - start
+		runnerList = append(runnerList, gluster.RunDist("functions.MatrixMultiply", reflect.TypeOf(output), inputA[(start*maxArraySize):(end*maxArraySize)], inputB, maxArraySize, rowCount))
 	}
 
 	for _, runner := range runnerList {
 		for !(gluster.JobDone(runner)) {
 		}
 		var partialOutput = gluster.GetReturn(runner).([]int)
-		mergeArray(output, partialOutput)
+		output = append(output, partialOutput...)
 	}
-	//fmt.Println("Result Matrix:")
-	//printMatrix(output, maxArraySize)
 
 	if !verifyOutput(output, maxArraySize) {
 		fmt.Println("Output array incorrect!!!")
@@ -117,7 +120,7 @@ func testRoutinesMultiplication(maxArraySize int, processCount int) {
 	inputB := make([]int, maxArraySize*maxArraySize)
 	fillArray(inputB, 2)
 
-	output := make([]int, maxArraySize*maxArraySize)
+	output := make([]int, 0)
 
 	var runnerList []int
 
@@ -126,15 +129,14 @@ func testRoutinesMultiplication(maxArraySize int, processCount int) {
 		var start = (i * maxArraySize / processCount)
 		var end = ((i + 1) * maxArraySize / processCount)
 		var rowCount = end - start
-		//subSlice := inputA[(start * maxArraySize):(end*maxArraySize - 1)]
-		runnerList = append(runnerList, gluster.RunDist("functions.RoutinesMatrixMultiply", reflect.TypeOf(output), inputA[(start*maxArraySize):(end*maxArraySize-1)], inputB, maxArraySize, rowCount))
+		runnerList = append(runnerList, gluster.RunDist("functions.RoutinesMatrixMultiply", reflect.TypeOf(output), inputA[(start*maxArraySize):(end*maxArraySize)], inputB, maxArraySize, rowCount))
 	}
 
 	for _, runner := range runnerList {
 		for !(gluster.JobDone(runner)) {
 		}
 		var partialOutput = gluster.GetReturn(runner).([]int)
-		mergeArray(output, partialOutput)
+		output = append(output, partialOutput...)
 	}
 
 	if !verifyOutput(output, maxArraySize) {
@@ -215,7 +217,7 @@ func main() {
 	timer6 := time.Now()
 
 	timer7 := time.Now()
-	testManyRoutinesMultiplication(ArraySize, processCount)
+	//testManyRoutinesMultiplication(ArraySize, processCount)
 	timer8 := time.Now()
 
 	fmt.Println("Gluster Init Time: 	      ", timer2.Sub(timer1))

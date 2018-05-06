@@ -40,6 +40,7 @@ func ManygoRoutinesMatrixMultiply(inputA []int, inputB []int, width int, machine
 
 func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, rowCount int) []int {
 	var wg sync.WaitGroup
+	fmt.Println("size A:", len(inputA), "size B:", len(inputB), "rows:", rowCount, "width:", width)
 	outputMatrix := make([]int, rowCount*width)
 	for row := 0; row < rowCount; row++ {
 		wg.Add(1)
@@ -55,17 +56,16 @@ func RoutinesMatrixMultiply(inputA []int, inputB []int, width int, rowCount int)
 		}(row)
 	}
 	wg.Wait()
+
+	printMatrix(outputMatrix, 8)
 	return outputMatrix
 }
 
 //MatrixMultiply ...
-func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) []int {
+func MatrixMultiply(inputA []int, inputB []int, width int, rowCount int) []int {
 	//fmt.Println("Matrix Multiply: ", len(inputA), " x ", len(b))
-	outputMatrix := make([]int, width*width)
-	var start = id * width / idCount
-	var end = (id + 1) * width / idCount
-
-	for row := start; row < end; row++ {
+	outputMatrix := make([]int, rowCount*width)
+	for row := 0; row < rowCount; row++ {
 		for col := 0; col < width; col++ {
 			var Pvalue = 0
 			for k := 0; k < width; k++ {
@@ -74,7 +74,6 @@ func MatrixMultiply(inputA []int, inputB []int, width int, id int, idCount int) 
 			outputMatrix[row*width+col] = Pvalue
 		}
 	}
-	//printMatrix(outputMatrix, width)
 	return outputMatrix
 }
 
