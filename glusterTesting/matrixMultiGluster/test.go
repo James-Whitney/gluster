@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"../gluster/src/master"
+	"../../gluster/src/master"
 )
 
 func fillArray(a []int, x int) {
