@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"sync"
 	"strings"
 )
 
 func WordCount(words []string, processCount int) map[string]int {
+	fmt.Println("Begining WordCount")
 	// perform wordCount
 	var wg sync.WaitGroup
 	var globalDict = struct{
@@ -24,7 +26,7 @@ func WordCount(words []string, processCount int) map[string]int {
 			
 			// var m map[string]int
 			m := make(map[string]int)
-
+			fmt.Println("Runnign Processes", processID)
 			for i := start; i < end; i++ {
 				word := strings.ToLower(strings.Trim(words[i], "*!(),.?;“”’_"))
 				count := m[word]
@@ -53,5 +55,6 @@ func WordCount(words []string, processCount int) map[string]int {
 	}
 
 	wg.Wait()
+	fmt.Println("Ending WordCount")
 	return globalDict.m
 }
