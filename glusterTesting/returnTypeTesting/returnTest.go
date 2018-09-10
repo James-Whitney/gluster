@@ -33,9 +33,7 @@ func addRunners() {
 }
 
 func main() {
-	testSize, _ := strconv.Atoi(os.Args[1])
 	runnerCount, _ := strconv.Atoi(os.Args[2])
-	processCount, _ := strconv.Atoi(os.Args[3])
 	debug, _ := strconv.Atoi(os.Args[4])
 
 
