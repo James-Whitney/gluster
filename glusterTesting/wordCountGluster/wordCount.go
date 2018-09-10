@@ -99,7 +99,7 @@ func main() {
 		fmt.Println("Launching Runner: ", runnerID)
 		var start = runnerID * len(words) / runnerCount
 		var end = (runnerID + 1) * len(words) / runnerCount
-		runnerList = append(runnerList, gluster.RunDist("functions.wordCount", reflect.TypeOf(output), words[start:end], processCount))
+		runnerList = append(runnerList, gluster.RunDist("functions.WordCount", reflect.TypeOf(output), words[start:end], processCount))
 	}
 
 	//Collect runner outputs
