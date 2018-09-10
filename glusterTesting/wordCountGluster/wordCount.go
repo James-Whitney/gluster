@@ -111,11 +111,15 @@ func main() {
 		var partialResult = gluster.GetReturn(runner).(map[string]int)
 		partialResults = append(partialResults, partialResult)
 	}
-	resultMap := mergeMaps(partialResults)
 	timer3 := time.Now()
+	resultMap := mergeMaps(partialResults)
+	timer4 := time.Now()
 	
 	fmt.Println("length of map: ", len(resultMap))
 	fmt.Println("Dataset Init Time: ", timer1.Sub(timer0))
 	fmt.Println("Gluster Init Time: ", timer2.Sub(timer1))
 	fmt.Println("wordCount Time:    ", timer3.Sub(timer2))
+	fmt.Println("Merge Time:        ", timer4.Sub(timer3))
+	fmt.Println("Merge+count Time:  ", timer4.Sub(timer2))
+
 }
