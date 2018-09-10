@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"sync"
+	"strings"
 )
 
 func wordCount(words []string, processCount int) map[string]int {
