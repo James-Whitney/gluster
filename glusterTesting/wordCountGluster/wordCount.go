@@ -21,6 +21,7 @@ func mergeMaps(mapList []map[string]int) map[string]int{
 		m map[string]int
 	}{m: make(map[string]int)}
 	for _, i := range mapList {
+		wg.Add(1)
 		go func(subMap map[string]int) {
 			defer wg.Done()
 			for word, count := range subMap {

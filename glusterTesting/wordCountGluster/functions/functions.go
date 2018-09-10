@@ -56,5 +56,6 @@ func WordCount(words []string, processCount int) map[string]int {
 
 	wg.Wait()
 	fmt.Println("Ending WordCount")
+	fmt.Println("Length of map: ", len(globalDict.m))
 	return globalDict.m
 }
