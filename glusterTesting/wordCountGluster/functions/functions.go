@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func wordCount(words []string, processCount int) map[string]int {
+func WordCount(words []string, processCount int) map[string]int {
 	// perform wordCount
 	var wg sync.WaitGroup
 	var globalDict = struct{
