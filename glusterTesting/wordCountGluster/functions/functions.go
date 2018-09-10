@@ -26,7 +26,7 @@ func WordCount(words []string, processCount int) map[string]int {
 			
 			// var m map[string]int
 			m := make(map[string]int)
-			fmt.Println("Runnign Processes", processID)
+			fmt.Println("Runninng Processes", processID)
 			for i := start; i < end; i++ {
 				word := strings.ToLower(strings.Trim(words[i], "*!(),.?;“”’_"))
 				count := m[word]
