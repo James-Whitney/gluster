@@ -61,10 +61,11 @@ func main() {
 	}
 
 	//Collect runner outputs
+	var result map[string]int
 	for _, runner := range runnerList {
 		for !(gluster.JobDone(runner)) {
 		}
-		var result = gluster.GetReturn(runner).(map[string]int)
+		result = gluster.GetReturn(runner).(map[string]int)
 	}
 	
 	fmt.Println("length of map: ", len(result))
