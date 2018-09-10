@@ -104,7 +104,7 @@ func main() {
 	}
 
 	//Collect runner outputs
-	var partialResults []map[string]int
+	var partialResults [](map[string]int)
 	for _, runner := range runnerList {
 		for !(gluster.JobDone(runner)) {
 		}
