@@ -223,7 +223,7 @@ func exec_command(rw *bufio.ReadWriter) {
 	//encode and send back reply
 	if len(reply) > 0 {
 		// fmt.Println(len(reply[0].Interface().([]int)))
-		sendReply(rw, reply.Interface()) 
+		sendReply(rw, reply[0].Interface()) 
 	}
 
 	debugPrint("Done calling function, response sent")
