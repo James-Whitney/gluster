@@ -33,8 +33,8 @@ func addRunners() {
 }
 
 func main() {
-	runnerCount, _ := strconv.Atoi(os.Args[2])
-	debug, _ := strconv.Atoi(os.Args[4])
+	runnerCount, _ := strconv.Atoi(os.Args[1])
+	debug, _ := strconv.Atoi(os.Args[2])
 
 
 	//Initialize Gluster
@@ -46,7 +46,7 @@ func main() {
 	}
 	gluster.ImportFunctionFile("functions/functions.go")
 
-	var input map[string]int
+	input := make(map[string]int)
 	input["test"] = 100
 	
 	//Launch Runners
