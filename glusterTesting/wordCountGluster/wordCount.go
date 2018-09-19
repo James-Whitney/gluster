@@ -76,8 +76,6 @@ func main() {
 	timer0 := time.Now()
 	dat, err := ioutil.ReadFile("words.txt")
 	check(err)
-	book := strings.Replace(string(dat), "—", " ", -1)
-	book = book + " "
 	book = strings.Repeat(book, testSize)
 	words := strings.Fields(book)
 	timer1 := time.Now()

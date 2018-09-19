@@ -33,34 +33,28 @@ func main() {
 
 	// Initalize Dataset into array of words "words"
 	timer0 := time.Now()
-	dat, err := ioutil.ReadFile("words.txt")
+	dat, err := ioutil.ReadFile("wordsClean.txt")
 	check(err)
-	book := strings.Replace(string(dat), "—", " ", -1)
-	book = book + " "
-	book = strings.Repeat(book, 10)
+	book := string(dat)
+	// book := strings.Replace(string(dat), "—", " ", -1)
+	// book = book + " "
+	// book = strings.Repeat(book, 1)
 	words := strings.Fields(book)
 	timer1 := time.Now()
 
-	//Initialize Gluster
-	// addRunners() // - This should be added to the library
-	// if debug == 1 {
-	// 	gluster.SetDebug(true)
-	// } else {
-	// 	gluster.SetDebug(false)
-	// }
-	// gluster.ImportFunctionFile("functions/functions.go")
+
 	timer2 := time.Now()
 
 	// perform wordCount
 	processCount := 4 // number of goRoutines per machine
 
 	var wg sync.WaitGroup
-	var globalDict = struct{
+	var resultMap = struct{
 		sync.RWMutex
 		m map[string]int
 	}{m: make(map[string]int)}
 
-	// globalDict.dict = make(map[string]int)
+	// resultMap.dict = make(map[string]int)
 	for p := 0; p < processCount; p++ {
 
 		wg.Add(1)
@@ -68,6 +62,25 @@ func main() {
 			defer wg.Done()
 			var start = processID * len(words) / processCount
 			var end = (processID + 1) * len(words) / processCount
+			
+
+			// for i := start; i < end; i++ {
+			// 	word := strings.ToLower(strings.Trim(words[i], "*!(),.?;“”’_"))
+			// 	resultMap.RLock()
+			// 	count, ok := resultMap.m[word]
+			// 	resultMap.RUnlock()
+
+			// 	if ok {
+			// 		resultMap.Lock()
+			// 		resultMap.m[word] = count + 1
+			// 		resultMap.Unlock()
+			// 	} else {
+			// 		resultMap.Lock()
+			// 		resultMap.m[word] = 1
+			// 		resultMap.Unlock()
+			// 	}
+			// }
+
 			
 			// var m map[string]int
 			m := make(map[string]int)
@@ -83,17 +96,17 @@ func main() {
 			}
 
 			for word, count := range m {
-				globalDict.RLock()
-				gcount, ok := globalDict.m[word]
-				globalDict.RUnlock()
+				resultMap.RLock()
+				gcount, ok := resultMap.m[word]
+				resultMap.RUnlock()
 				if ok {
-					globalDict.Lock()
-					globalDict.m[word] = gcount + count
-					globalDict.Unlock()
+					resultMap.Lock()
+					resultMap.m[word] = gcount + count
+					resultMap.Unlock()
 				} else {
-					globalDict.Lock()
-					globalDict.m[word] = count
-					globalDict.Unlock()
+					resultMap.Lock()
+					resultMap.m[word] = count
+					resultMap.Unlock()
 				}
 			}
 		} (p)
@@ -103,8 +116,7 @@ func main() {
 
 	timer3 := time.Now()
 	
-	fmt.Println("length of map: ", len(globalDict.m))
+	fmt.Println("length of map: ", len(resultMap.m))
 	fmt.Println("Dataset Init Time: ", timer1.Sub(timer0))
-	// fmt.Println("Gluster Init Time: ", timer2.Sub(timer1))
 	fmt.Println("wordCount Time:    ", timer3.Sub(timer2))
 }

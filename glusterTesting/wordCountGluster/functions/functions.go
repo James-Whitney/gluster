@@ -2,7 +2,6 @@ package main
 
 import (
 	"sync"
-	"strings"
 )
 
 func WordCount(words []string, processCount int) map[string]int {
@@ -27,12 +26,12 @@ func WordCount(words []string, processCount int) map[string]int {
 			m := make(map[string]int)
 			// fmt.Println("Runninng Processes", processID)
 			for i := start; i < end; i++ {
-				word := strings.ToLower(strings.Trim(words[i], "*!(),.?;“”’_"))
-				count := m[word]
+				// word := strings.ToLower(strings.Trim(words[i], "*!(),.?;“”’_"))
+				count := m[words[i]]
 				if count == 0 {
-					m[word] = 1
+					m[words[i]] = 1
 				} else {
-					m[word] = count + 1
+					m[words[i]] = count + 1
 				}
 			}
 
